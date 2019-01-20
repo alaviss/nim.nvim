@@ -133,9 +133,13 @@ function! nim#suggest#Connect(instance, opts)
     echoerr 'invalid instance specified'
     return 0
   endif
-  let channel = sockconnect('tcp', 'localhost:' . a:instance.port, a:opts)
-  if channel == 0
-    return 0
-  endif
-  return channel
+  let channel = 0
+  try
+    let channel = sockconnect('tcp', 'localhost:' . a:instance.port, a:opts)
+  finally
+    if channel == 0
+      return 0
+    endif
+    return channel
+  endtry
 endfunction
