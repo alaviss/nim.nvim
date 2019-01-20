@@ -90,7 +90,7 @@ syntax keyword nimPragma contained inline
 
 syntax region nimPragmaList
       \ start=+{.+ end=+.\?}+
-      \ contains=nimPragma
+      \ contains=nimPragma,nimString,nimRawString
 
 " sync at the beginning of functions definition
 syntax sync match nimSync grouphere NONE "^\%(proc\|func\|iterator\|method\)\s\+\a\w*\s*[(:=]"
