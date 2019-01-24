@@ -89,7 +89,7 @@ syntax keyword nimPragma contained packed dynlib threadvar gcsafe locks guard
 syntax keyword nimPragma contained inline
 
 syntax region nimPragmaList
-      \ start=+{.+ end=+.\?}+
+      \ start=+{\.+ end=+\.\?}+
       \ contains=nimPragma,nimString,nimRawString
 
 " sync at the beginning of functions definition
