@@ -5,48 +5,34 @@
 " Licensed under the terms of the ISC license,
 " see the file "license.txt" included within this distribution.
 
-function! s:OnReply(chan, data, event) dict
-  if a:event != 'data'
+function! s:OnEnd() dict
+  if !empty(self.dirty)
+    call delete(self.dirty)
+  endif
+  if self.hldata.newId != -1
+    if self.hldata.srcId != -1
+      call nvim_buf_clear_highlight(self.hldata.buffer, self.hldata.srcId, 0, -1)
+    endif
+    let self.hldata.srcId = self.hldata.newId
+    let self.hldata.newId = -1
+    if self.hldata.queued
+      let self.hldata.queued = v:false
+      call s:HighlightBuffer(self.instance, self.hldata)
+    endif
+  endif
+endfunction
+
+function! s:OnReply(reply) dict
+  if a:reply[0] != "highlight"
     return
   endif
-
-  if a:data == ['']
-    call chanclose(a:chan)
-    if !empty(self.dirty)
-      call delete(self.dirty)
-    endif
-    if self.hldata.newId != -1
-      if self.hldata.srcId != -1
-        call nvim_buf_clear_highlight(self.hldata.buffer, self.hldata.srcId, 0, -1)
-      endif
-      let self.hldata.srcId = self.hldata.newId
-      let self.hldata.newId = -1
-      if self.hldata.queued
-        let self.hldata.queued = v:false
-        call s:HighlightBuffer(self.instance, self.hldata)
-      endif
-    endif
-    return
-  endif
-
-  let self.buf[-1] .= split(a:data[0], '\r', v:true)[0]
-  call extend(self.buf, a:data[1:])
-  while len(self.buf) > 1
-    " nimsuggest will send a <CR> at the end of the reply
-    " catch that as the marker to exit early
-    let reply = split(self.buf[0], '\t', v:true)
-    if reply[0] != "highlight"
-      return
-    endif
-    " replace sk prefix with ours
-    let group = "nimSug" . reply[1][2:]
-    let line = str2nr(reply[2] - 1)
-    let col = str2nr(reply[3])
-    let count = str2nr(reply[4])
-    call nvim_buf_add_highlight(self.hldata.buffer, self.hldata.newId, group,
-         \                      line, col, col + count)
-    unlet self.buf[0]
-  endwhile
+  " replace sk prefix with ours
+  let group = "nimSug" . a:reply[1][2:]
+  let line = str2nr(a:reply[2] - 1)
+  let col = str2nr(a:reply[3])
+  let count = str2nr(a:reply[4])
+  call nvim_buf_add_highlight(self.hldata.buffer, self.hldata.newId, group,
+       \                      line, col, col + count)
 endfunction
 
 function! s:HighlightBuffer(instance, hldata) abort
@@ -55,41 +41,27 @@ function! s:HighlightBuffer(instance, hldata) abort
     let a:hldata.queued = v:true
     return
   endif
-  let curfile = expand("%:p")
-  let fileext = expand("%:e")
-  let dirty = ""
-  let file = ""
-  let ext = "nim"
-  if filereadable(curfile)
-    let file = curfile
-  endif
-  if fileext =~ '^\%(nim\|nims\|nimble\)$'
-    let ext = fileext
-  endif
-
-  if &modified
-    let dirty = tempname() . '.' . ext
-    call writefile(getline(1, '$'), dirty, 'S')
-  endif
-
+  let fileQuery = nim#suggest#utils#MakeFileQuery(a:hldata.buffer)
   let a:hldata.newId = nvim_buf_add_highlight(a:hldata.buffer, 0, '', 0, 0, 0)
-  let channel = nim#suggest#Connect(a:instance,
-      \                             {'on_data': function('s:OnReply'),
-      \                              'hldata': a:hldata,
-      \                              'buf': [''],
-      \                              'instance': a:instance,
-      \                              'dirty': dirty})
+  let connOpts = {'on_data': v:null,
+      \           'onReply': function('s:OnReply'),
+      \           'onEnd': function('s:OnEnd'),
+      \           'hldata': a:hldata,
+      \           'buf': [''],
+      \           'instance': a:instance,
+      \           'dirty': fileQuery.dirty}
+  let connOpts.on_data = function('nim#suggest#utils#BufferedCallback', connOpts)
+  let channel = nim#suggest#Connect(a:instance, connOpts)
   if channel == 0
     echomsg '[nim#suggest#highlight] Unable to connect to nimsuggest'
-    if !empty(dirty)
-      call delete(dirty)
+    if !empty(fileQuery.dirty)
+      call delete(fileQuery.dirty)
     endif
     let a:hldata.newId = -1
     return
   endif
 
-  call chansend(channel,
-       \        ['highlight "' . file . '";"' . dirty . '"', ''])
+  call chansend(channel, ['highlight ' . fileQuery.query, ''])
 endfunction
 
 function! nim#suggest#highlight#HighlightBuffer()
