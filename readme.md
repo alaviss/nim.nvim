@@ -10,5 +10,6 @@ This plugin is still pretty much a work-in-progress.
 #### Features
 
 - Semantic highlighting with nimsuggest. Highlight as you type (experimental)
+- "Go to Definition" support using nimsuggest.
 - Section movements!
 - And more...
