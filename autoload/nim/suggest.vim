@@ -65,8 +65,8 @@ function! s:FindProjectInstance(file)
   return result
 endfunction
 
-function! nim#suggest#FindInstance()
-  let projectFile = expand('%:p')
+function! nim#suggest#FindInstance(...)
+  let projectFile = a:0 >= 1 ? fnamemodify(a:1, ':p') : expand('%:p')
   if empty(projectFile)
     echomsg 'nimsuggest is only available to files on disk'
     return {}

@@ -30,41 +30,16 @@ endfunction
 
 function! s:OnEnd() dict
   call self.callback({}, v:true)
-  if !empty(self.dirty)
-    call delete(self.dirty)
-  endif
 endfunction
 
 function! nim#suggest#sug#GetCompletions(callback)
   " callback(startpos, complete-item, completed) for every candidate found
-  let current = nim#suggest#FindInstance()
-  if empty(current)
-    echomsg 'nimsuggest is not running for this project'
-    return
-  endif
-  if current.instance.port == -1
-    echomsg 'nimsuggest is not ready for this project, try again later'
-    return
-  endif
   let cursor = getcurpos()[1:2]
   let startpos = s:FindStartingPosition(getline('.'), cursor[1])
-  let fileQuery = nim#suggest#utils#MakeFileQuery(bufnr(''), cursor[0], cursor[1])
-  let connOpts = {'on_data': v:null,
-      \           'onReply': function('s:OnReply'),
-      \           'onEnd': function('s:OnEnd'),
-      \           'buf': [''],
-      \           'callback': function(a:callback, [startpos]),
-      \           'dirty': fileQuery.dirty}
-  let connOpts.on_data = function('nim#suggest#utils#BufferedCallback', connOpts)
-  let chan = nim#suggest#Connect(current.instance, connOpts)
-  if chan == 0
-    echomsg '[nim#suggest#sug] Unable to connect to nimsuggest'
-    if !empty(fileQuery.dirty)
-      call delete(fileQuery.dirty)
-    endif
-    return
-  endif
-  call chansend(chan, ['sug ' . fileQuery.query, ''])
+  let opts = {'onReply': function('s:OnReply'),
+      \       'onEnd': function('s:OnEnd'),
+      \       'callback': function(a:callback, [startpos])}
+  call nim#suggest#utils#Query(bufnr('.'), cursor[0], cursor[1], 'sug', opts, v:false)
 endfunction
 
 function! nim#suggest#sug#GetAllCandidates(callback)
