@@ -18,9 +18,8 @@ function! s:OnReply(reply) dict
     execute self.buffer . 'bufdo! ' . 'call cursor([' . line . ',' . col . '])'
   else
     execute self.buffer . 'bufdo! ' . openCmd . ' ' . '+' .
-    \       'call\ cursor([' . line . ',' . col . ']) ' . file
+    \       'call\ cursor([' . line . ',' . col . ']) ' . fnameescape(file)
   endif
-  let self.closeNow = v:true
 endfunction
 
 function! nim#suggest#def#GoTo(openIn)
