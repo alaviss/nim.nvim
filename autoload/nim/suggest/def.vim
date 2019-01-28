@@ -14,6 +14,7 @@ function! s:OnReply(reply) dict
   elseif self.openIn == 's'
     let openCmd = 'split'
   endif
+  call setbufvar(self.buffer, 'nimSugDefLock', v:false)
   if openCmd == 'edit' && file == fnamemodify(bufname(self.buffer), ':p')
     execute self.buffer . 'bufdo! ' . 'call cursor([' . line . ',' . col . '])'
   else
@@ -23,9 +24,13 @@ function! s:OnReply(reply) dict
 endfunction
 
 function! nim#suggest#def#GoTo(openIn)
+  if exists('b:nimSugDefLock') && b:nimSugDefLock
+    return
+  endif
   let buffer = bufnr('')
   let opts = {'onReply': function('s:OnReply'),
       \       'buffer': buffer,
       \       'openIn': a:openIn}
+  let b:nimSugDefLock = v:true
   call nim#suggest#utils#Query(buffer, line('.'), col('.'), 'def', opts, v:false)
 endfunction
