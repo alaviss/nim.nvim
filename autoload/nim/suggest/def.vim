@@ -17,7 +17,7 @@ function! s:OnReply(reply) dict
   call setbufvar(self.buffer, 'nimSugDefLock', v:false)
   if openCmd == 'edit' && file == fnamemodify(bufname(self.buffer), ':p')
     execute self.buffer . 'bufdo! ' . 'call cursor([' . line . ',' . col . '])'
-  else
+  elseif bufwinnr(self.buffer) != -1 || openCmd == 'edit'
     execute self.buffer . 'bufdo! ' . openCmd . ' ' . '+' .
     \       'call\ cursor([' . line . ',' . col . ']) ' . fnameescape(file)
   endif
