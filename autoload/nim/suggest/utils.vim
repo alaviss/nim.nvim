@@ -99,7 +99,6 @@ function! nim#suggest#utils#Query(buf, line, col, query, opts, queue, ...)
   let chan = nim#suggest#Connect(instance.instance, opts)
   if chan == 0
     echomsg 'unable to connect to nimsuggest'
-    let opts.onEnd = v:null
     call opts['utils#on_end']()
     return
   endif
