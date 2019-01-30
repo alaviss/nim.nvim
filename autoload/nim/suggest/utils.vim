@@ -59,8 +59,6 @@ endfunction
 function! nim#suggest#utils#Query(buf, line, col, query, opts, queue)
   " opts = { 'onReply': function(reply) invoked for each reply,
   "          'onEnd': function() invoked after query end (optional) }
-  " dict 'utils#' namespace:
-  "   - dirty: modified buffer file name
   let instance = nim#suggest#FindInstance(bufname(a:buf))
   if empty(instance)
     echomsg 'nimsuggest is not running for this project'

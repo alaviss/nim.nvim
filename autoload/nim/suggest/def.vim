@@ -5,16 +5,13 @@ function! s:OnReply(reply) dict
   let file = a:reply[4]
   let line = a:reply[5]
   let col = a:reply[6] + 1
-  if file == self['utils#dirty']
-    let file = fnamemodify(bufname(self.buffer), ':p')
-  endif
   let openCmd = 'edit'
   if self.openIn == 'v'
     let openCmd = 'vsplit'
   elseif self.openIn == 's'
     let openCmd = 'split'
   endif
-  if openCmd == 'edit' && file == fnamemodify(bufname(self.buffer), ':p')
+  if openCmd == 'edit' && bufnr(file) == self.buffer
     execute self.buffer . 'bufdo! ' . 'call cursor([' . line . ',' . col . '])'
   elseif bufwinnr(self.buffer) != -1 || openCmd == 'edit'
     execute self.buffer . 'bufdo! ' . openCmd . ' ' . '+' .
