@@ -8,7 +8,7 @@
 let s:suggestInstances = {}
 
 function! s:NewInstance(project, file)
-  " connectQueue = [function()] called after port is available
+  " connectQueue = [function(failed: bool)] called after port is available
   let result = {
       \         'job': -1,
       \         'port': -1,
@@ -22,7 +22,7 @@ function! s:NewInstance(project, file)
       if len(self.buffer) > 1
         let self.instance.port = str2nr(self.buffer[0])
         for F in self.instance.connectQueue
-          call F()
+          call F(v:false)
         endfor
         unlet self.instance.connectQueue
       endif
@@ -31,6 +31,11 @@ function! s:NewInstance(project, file)
       \       ' exited with exitcode: ' . a:data
       let self.instance.job = -1
       let self.instance.port = -1
+      if has_key(self.instance, 'connectQueue')
+        for F in self.instance.connectQueue
+          call F(v:true)
+        endfor
+      endif
     endif
   endfunction
 
@@ -124,7 +129,7 @@ function! nim#suggest#RunAfterReady(instance, Func)
   if a:instance.port == -1
     call add(a:instance.connectQueue, a:Func)
   else
-    call a:Func()
+    call a:Func(v:false)
   endif
 endfunction
 

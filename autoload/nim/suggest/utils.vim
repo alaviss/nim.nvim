@@ -56,16 +56,29 @@ function! s:EndCallback() dict
   endif
 endfunction
 
-function! nim#suggest#utils#Query(buf, line, col, query, opts, queue)
+function! nim#suggest#utils#Query(buf, line, col, query, opts, queue, ...)
   " opts = { 'onReply': function(reply) invoked for each reply,
   "          'onEnd': function() invoked after query end (optional) }
+  let failed = a:0 >= 1 ? a:1 : v:false
+  if failed
+    if has_key(a:opts, 'onEnd')
+      call a:opts.onEnd()
+    endif
+    return
+  endif
   let instance = nim#suggest#FindInstance(bufname(a:buf))
   if empty(instance)
     echomsg 'nimsuggest is not running for this project'
+    if has_key(a:opts, 'onEnd')
+      call a:opts.onEnd()
+    endif
     return
   endif
   if !a:queue && instance.instance.port == -1
     echomsg 'nimsuggest is not ready for this project'
+    if has_key(a:opts, 'onEnd')
+      call a:opts.onEnd()
+    endif
     return
   elseif instance.instance.port == -1
     call nim#suggest#RunAfterReady(instance.instance,

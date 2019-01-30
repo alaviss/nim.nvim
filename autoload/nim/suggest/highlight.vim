@@ -24,9 +24,6 @@ function! s:OnReply(reply) dict
   if a:reply[0] != "highlight"
     return
   endif
-  if self.hldata.newId == -1
-    let self.hldata.newId = nvim_buf_add_highlight(self.buffer, 0, '', 0, 0, 0)
-  endif
   " replace sk prefix with ours
   let group = "nimSug" . a:reply[1][2:]
   let line = str2nr(a:reply[2] - 1)
@@ -42,6 +39,7 @@ function! s:HighlightBuffer(buffer, hldata) abort
     let a:hldata.queued = v:true
     return
   endif
+  let a:hldata.newId = nvim_buf_add_highlight(a:buffer, 0, '', 0, 0, 0)
   let opts = {'onReply': function('s:OnReply'),
       \       'onEnd': function('s:OnEnd'),
       \       'buffer': a:buffer,
