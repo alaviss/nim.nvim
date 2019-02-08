@@ -28,7 +28,6 @@ syntax keyword nimConstant        nil
 syntax keyword nimPreCondit       when
 syntax keyword nimInclude         export from import include
 syntax keyword nimStructure       enum object tuple
-syntax keyword nimResult          result
 
 syntax keyword nimPreProcStmt     alignof compiles defined sizeof
 
@@ -107,7 +106,6 @@ highlight default link nimConstant        Constant
 highlight default link nimPreCondit       PreCondit
 highlight default link nimInclude         Include
 highlight default link nimStructure       Structure
-highlight default link nimResult          Special
 highlight default link nimPreProcStmt     Macro
 highlight default link nimComment         Comment
 highlight default link nimTodo            Todo
@@ -132,6 +130,7 @@ highlight default link nimSugGlobalVar Identifier
 highlight default link nimSugLet Identifier
 highlight default link nimSugGlobalLet Identifier
 highlight default link nimSugConst Constant
+highlight default link nimSugResult Special
 highlight default link nimSugProc Function
 highlight default link nimSugFunc Function
 highlight default link nimSugMethod Function
