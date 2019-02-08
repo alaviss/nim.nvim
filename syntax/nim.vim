@@ -126,7 +126,7 @@ highlight default link nimSugUnknown Error
 highlight default link nimSugParam Identifier
 highlight default link nimSugModule Identifier
 highlight default link nimSugType Type
-highlight default link nimSugGlobalParam Type
+highlight default link nimSugGenericParam Type
 highlight default link nimSugVar Identifier
 highlight default link nimSugGlobalVar Identifier
 highlight default link nimSugLet Identifier
