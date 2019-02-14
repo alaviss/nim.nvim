@@ -39,7 +39,7 @@ function! nim#suggest#sug#GetCompletions(callback)
   let opts = {'onReply': function('s:OnReply'),
       \       'onEnd': function('s:OnEnd'),
       \       'callback': function(a:callback, [startpos])}
-  call nim#suggest#utils#Query(bufnr('.'), cursor[0], cursor[1], 'sug', opts, v:false)
+  call nim#suggest#utils#Query(bufnr(''), cursor[0], cursor[1], 'sug', opts, v:false)
 endfunction
 
 function! nim#suggest#sug#GetAllCandidates(callback)
