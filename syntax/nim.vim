@@ -138,3 +138,7 @@ highlight default link nimSugIterator Function
 highlight default link nimSugConverter Macro
 highlight default link nimSugMacro Macro
 highlight default link nimSugTemplate Macro
+highlight default link nimSugField Identifier
+highlight default link nimSugEnumField Constant
+highlight default link nimSugForVar Identifier
+highlight default link nimSugLabel Identifier
