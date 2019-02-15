@@ -70,7 +70,8 @@ function! s:FindProjectInstance(dir)
 endfunction
 
 function! nim#suggest#FindInstance(...)
-  let projectDir = a:0 >= 1 ? fnamemodify(a:1, ':p:h') : expand('%:p:h')
+  let projectDir = a:0 >= 1 ? fnamemodify(a:1, ':h') : expand('%:h')
+  let projectDir = fnamemodify(projectDir, ':p')
   if empty(projectDir)
     echomsg 'nimsuggest is only available to files on disk'
     return {}
@@ -88,7 +89,7 @@ function! nim#suggest#ProjectFileStart(file)
     echomsg 'nimsuggest is only available to files on disk'
     return {}
   endif
-  let projectDir = fnamemodify(projectFile, ':h')
+  let projectDir = fnamemodify(fnamemodify(projectFile, ':h'), ':p')
   if has_key(s:suggestInstances, projectDir) &&
   \  s:suggestInstances[projectDir].job != -1
     echomsg 'An instance of nimsuggest has already been started for this project'
@@ -103,13 +104,13 @@ function! nim#suggest#ProjectStart()
 endfunction
 
 function! nim#suggest#ProjectStop()
-  let projectDir = expand('%:p:h')
+  let projectDir = fnamemodify(expand('%:h'), ':p')
   call jobstop(s:suggestInstances[projectDir].job)
   unlet s:suggestInstances[projectDir]
 endfunction
 
 function! nim#suggest#ProjectFindOrStart()
-  let projectDir = expand('%:p:h')
+  let projectDir = fnamemodify(expand('%:h'), ':p')
   if empty(projectDir)
     echomsg 'nimsuggest is only available to files on disk'
     return {}
