@@ -53,14 +53,13 @@ function! s:NewInstance(project, file)
   return result
 endfunction
 
-function! s:FindProjectInstance(file)
-  if empty(a:file)
+function! s:FindProjectInstance(dir)
+  if empty(a:dir)
     return ''
   endif
   let result = ''
   for key in keys(s:suggestInstances)
-    let file = expand(a:file)
-    if stridx(file, key) == 0 && strlen(key) > strlen(result)
+    if stridx(a:dir, key) == 0 && strlen(key) > strlen(result)
       let result = key
     endif
   endfor
@@ -71,12 +70,12 @@ function! s:FindProjectInstance(file)
 endfunction
 
 function! nim#suggest#FindInstance(...)
-  let projectFile = a:0 >= 1 ? fnamemodify(a:1, ':p') : expand('%:p')
-  if empty(projectFile)
+  let projectDir = a:0 >= 1 ? fnamemodify(a:1, ':p:h') : expand('%:p:h')
+  if empty(projectDir)
     echomsg 'nimsuggest is only available to files on disk'
     return {}
   endif
-  let projectDir = s:FindProjectInstance(projectFile)
+  let projectDir = s:FindProjectInstance(projectDir)
   if empty(projectDir)
     return {}
   endif
@@ -110,12 +109,12 @@ function! nim#suggest#ProjectStop()
 endfunction
 
 function! nim#suggest#ProjectFindOrStart()
-  let projectFile = expand('%:p')
-  if empty(projectFile)
+  let projectDir = expand('%:p:h')
+  if empty(projectDir)
     echomsg 'nimsuggest is only available to files on disk'
     return {}
   endif
-  let projectDir = s:FindProjectInstance(projectFile)
+  let projectDir = s:FindProjectInstance(projectDir)
   if empty(projectDir)
     return nim#suggest#ProjectStart()
   endif
