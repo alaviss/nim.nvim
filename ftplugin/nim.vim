@@ -10,8 +10,10 @@ let b:did_ftplugin = 1
 
 setlocal comments=:#,s1:#[,e:]#,fb:-
 setlocal commentstring=#%s
-setlocal foldignore=
-setlocal foldmethod=indent
+if !exists('g:nim_fold') || g:nim_fold
+  setlocal foldignore=
+  setlocal foldmethod=indent
+endif
 setlocal include=^\\s*\\(from\\|import\\|include\\)
 setlocal suffixesadd=.nim
 
