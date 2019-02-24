@@ -81,7 +81,7 @@ function GetNimIndent(lnum)
     " Some implict blocks
     if prevNonEmptyLine =~ '^\s*\(const\|enum\|let\|type\|var\)\>\s*$' ||
           \ prevNonEmptyLine =~ '=\s*\(enum\|tuple\)\>\s*$' ||
-          \ prevNonEmptyLine =~ '=\s*object\(\s\+of\s\+\a\w*\)\=\>\s*$' ||
+          \ prevNonEmptyLine =~ '=\s*\(ptr\|ref\)\=\s\+object\(\s\+of\s\+\a\w*\)\=\>\s*$' ||
           \ prevNonEmptyLine =~ '=\s*concept\>.*$'
       return prevIndent + shiftwidth()
     endif
