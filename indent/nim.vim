@@ -43,11 +43,11 @@ function s:getLineNoComments(lnum)
     let line = getline(a:lnum)
     let lineLen = strlen(line)
     if synIDattr(synID(a:lnum, lineLen, v:true), "name") =~
-          \ '\(Comments\|Todos\)$'
+          \ '\(Comment\|Todo\)$'
       return strpart(line, 0,
             \ s:binaryLook(1, lineLen,
             \              {x -> synIDattr(synID(a:lnum, x, v:true), "name") =~
-            \              '\(Comments\|Todos\)$'}) - 1)
+            \              '\(Comment\|Todo\)$'}) - 1)
     else
       return line
     endif
@@ -56,7 +56,7 @@ endfunction
 function GetNimIndent(lnum)
     " If we're in a multi-line string or comment, don't change the indent
     if synIDattr(synID(a:lnum, 1, v:true), "name") =~
-          \ '\(Comments\|Strings\)$'
+          \ '\(Comment\|String\)$'
       return -1
     endif
 
