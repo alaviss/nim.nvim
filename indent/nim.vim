@@ -83,7 +83,8 @@ function GetNimIndent(lnum)
           \ prevNonEmptyLine =~ '=\s*\(enum\|tuple\)\>\s*$' ||
           \ prevNonEmptyLine =~ '=\s*\(ptr\|ref\)\=\s\+object\(\s\+of\s\+\a\w*\)\=\>\s*$' ||
           \ prevNonEmptyLine =~ '=\s*concept\>.*$'
-      return prevIndent + shiftwidth()
+      " Keep indent if the line before the block is empty
+      return len(getline(a:lnum - 1)) > 0 ? prevIndent + shiftwidth() : -1
     endif
 
     " If the previous line was a stop-execution statement
