@@ -24,6 +24,8 @@ if !exists("g:nim_nep1") || g:nim_nep1 != 0
   setlocal shiftwidth=2 softtabstop=2
 endif
 
+compiler nim
+
 " section movement
 noremap <script> <buffer> <silent> [[ :call <SID>nimNextSection(2, v:true)<lf>
 noremap <script> <buffer> <silent> ]] :call <SID>nimNextSection(2, v:false)<lf>
