@@ -80,6 +80,7 @@ function GetNimIndent(lnum)
 
     " Some implict blocks
     if prevNonEmptyLine =~ '^\s*\(const\|enum\|let\|type\|var\)\>\s*$' ||
+          \ prevNonEmptyLine =~ '=\s*case\>.*$' ||
           \ prevNonEmptyLine =~ '=\s*\(enum\|tuple\)\>\s*$' ||
           \ prevNonEmptyLine =~ '=\s*\(ptr\|ref\)\=\s\+object\(\s\+of\s\+\a\w*\)\=\>\s*$' ||
           \ prevNonEmptyLine =~ '=\s*concept\>.*$'
@@ -102,6 +103,7 @@ function GetNimIndent(lnum)
     if curLine =~ '^\s*\(elif\|else\|except\|finally\|of\)\>'
       " Unless the previous line was a one-liner
       " Or the user has already dedented
+      " Or it's a case expression
       if (prevNonEmptyLine =~ '^\s*\(case\|if\|when\|try\|of\)\>') ||
             \ (curIndent <= prevIndent - shiftwidth())
         return -1
