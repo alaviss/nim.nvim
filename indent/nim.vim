@@ -53,6 +53,17 @@ function s:getLineNoComments(lnum)
     endif
 endfunction
 
+function s:lookupBaseParen(lnum)
+    call cursor(a:lnum, 1)
+    let parenStart = '(\.\|(\|{\.\|{\|[\.\|['
+    let parenStop = '\.)\|)\|\.}\|}\|\.\]\|\]'
+    let skipExpr = "synIDattr(synID(line('.'), col('.'), v:false), 'name') =~ '\\(Comment\\|String\\)$'"
+
+    " timeout in 2ms to ensure smooth typing experience
+    let parenPos = searchpairpos(parenStart, '', parenStop, 'bnW', skipExpr, 0, 2)
+    return parenPos
+endfunction
+
 function GetNimIndent(lnum)
     " If we're in a multi-line string or comment, don't change the indent
     if synIDattr(synID(a:lnum, 1, v:true), "name") =~ '\(Comment\|String\)$' ||
@@ -70,9 +81,15 @@ function GetNimIndent(lnum)
 
     let prevNonEmptyLine = substitute(s:getLineNoComments(prevNonEmpty),
           \                           '\s\+$', '', '')
-    let prevIndent = indent(prevNonEmpty)
+    let prevParen = s:lookupBaseParen(prevNonEmpty)
+    if prevParen == [0, 0]
+      let prevIndent = indent(prevNonEmpty)
+    else
+      let prevIndent = indent(prevParen[0])
+    endif
     let curLine = getline(a:lnum)
     let curIndent = indent(a:lnum)
+    let curParen = s:lookupBaseParen(a:lnum)
 
     if prevNonEmptyLine =~ '\v%(\=|:)\s*$'
       return prevIndent + shiftwidth()
@@ -112,5 +129,18 @@ function GetNimIndent(lnum)
       endif
     endif
 
-    return -1
+    " Generates indent like in NEP #1:
+    " proc something(a: string,
+    "                ^
+    if curParen == [0, 0]
+      return prevIndent
+    else
+      let curParenLine = getline(curParen[0])
+      " Handle {.
+      if curParen[1] < len(curParenLine) && curParenLine[curParen[1]] == '.'
+        return curParen[1] + 1
+      else
+        return curParen[1]
+      endif
+    endif
 endfunction
