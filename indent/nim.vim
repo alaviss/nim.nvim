@@ -66,8 +66,7 @@ endfunction
 
 function GetNimIndent(lnum)
     " If we're in a multi-line string or comment, don't change the indent
-    if synIDattr(synID(a:lnum, 1, v:true), "name") =~ '\(Comment\|String\)$' ||
-          \ getline(a:lnum) =~ '\s*#.*$'
+    if synIDattr(synID(a:lnum, 1, v:true), "name") =~ '\(Comment\|String\)$'
       return -1
     endif
 
