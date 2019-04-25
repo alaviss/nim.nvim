@@ -133,13 +133,14 @@ function GetNimIndent(lnum)
     "                ^
     if curParen == [0, 0]
       return prevIndent
-    else
-      let curParenLine = getline(curParen[0])
+    elseif curParen[0] == prevNonEmpty
       " Handle {.
-      if curParen[1] < len(curParenLine) && curParenLine[curParen[1]] == '.'
+      if prevNonEmptyLine =~ '\.$'
         return curParen[1] + 1
       else
         return curParen[1]
       endif
+    else
+      return -1
     endif
 endfunction
