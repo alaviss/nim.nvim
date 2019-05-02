@@ -7,7 +7,10 @@ This plugin is still pretty much a work-in-progress.
 #### Requirements
 
 - neovim >= 0.3.0 (nimsuggest integration requires TCP byte sockets)
-- Latest development version of nimsuggest (--autobind is required)
+- Latest development version of nimsuggest (`--autobind` is required, you can
+  use [choosenim] to install this version)
+
+**Note**: The current stable version (0.19.x) will not work with this plugin.
 
 #### Installation
 
@@ -41,6 +44,12 @@ au User asyncomplete_setup call asyncomplete#register_source({
     \ })
 ```
 
+#### Usage
+
+See the project's [wiki][1] for more information.
+
 [0]: https://github.com/prabirshrestha/asyncomplete.vim
+[1]: https://github.com/alaviss/nim.nvim/wiki
+[choosenim]: https://github.com/dom96/choosenim
 [vim-packager]: https://github.com/kristijanhusak/vim-packager
 [vim-plug]: https://github.com/junegunn/vim-plug
