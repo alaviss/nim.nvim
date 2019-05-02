@@ -1,6 +1,6 @@
-# Contributing to nim.nvim
+### Contributing to nim.nvim
 
-Thanks for taking the time to contribute!
+Thank you for taking the time to contribute!
 
 If you want to contribute documentation, please [check the wiki
 first](https://github.com/alaviss/nim.nvim/wiki) and add it there if possible
@@ -21,4 +21,5 @@ Examples:
 * ftplugin/nim: fixes vsplit goto keymap
 
 * readme: add basic instructions on go to definition feature
+
   Also reworded the development compiler requirement.
