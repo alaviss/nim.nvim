@@ -30,8 +30,6 @@ This plugin is still pretty much a work-in-progress.
 - Section movements!
 - And more...
 
-Check the [GitHub wiki][1] for instructions.
-
 #### Auto completion
 
 Install [`prabirshrestha/asyncomplete.vim`][0] and configure it to your liking.
@@ -45,6 +43,10 @@ au User asyncomplete_setup call asyncomplete#register_source({
     \ 'completor': {opt, ctx -> nim#suggest#sug#GetAllCandidates({start, candidates -> asyncomplete#complete(opt['name'], ctx, start, candidates)})}
     \ })
 ```
+
+#### Usage
+
+See the project's [wiki][1] for more information.
 
 [0]: https://github.com/prabirshrestha/asyncomplete.vim
 [1]: https://github.com/alaviss/nim.nvim/wiki
