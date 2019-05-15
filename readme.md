@@ -28,6 +28,7 @@ This plugin is still pretty much a work-in-progress.
 - "Go to Definition" support using nimsuggest.
 - Autocompletion using nimsuggest.
 - Section movements!
+- NEP-1 style indentation!
 - And more...
 
 #### Auto completion

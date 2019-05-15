@@ -9,7 +9,7 @@ let b:did_indent = v:true
 
 setlocal autoindent
 setlocal indentexpr=GetNimIndent(v:lnum)
-setlocal indentkeys=!^F,o,O,<:>,=el,=of
+setlocal indentkeys=!^F,o,O,<:>,),],},=el,=of
 
 if exists("*GetNimIndent")
     finish
@@ -53,10 +53,44 @@ function s:getLineNoComments(lnum)
     endif
 endfunction
 
+let s:ParenStartDot = '(\.\|{\.\|[\.'
+let s:ParenStart = s:ParenStartDot . '\|(\|{\|['
+let s:ParenStopDot = '\.)\|\.}\|\.\]'
+let s:ParenStop = s:ParenStopDot . '\|)\|}\|\]'
+
+function s:lookupBaseParen(lnum, ...)
+    let skipExpr = "synIDattr(synID(line('.'), col('.'), v:false), 'name') =~ '\\(Comment\\|String\\|nimCharacter\\)$'"
+    let startPat = a:0 >= 1 ? a:1 : s:ParenStart
+    let stopPat = a:0 >= 2 ? a:2 : s:ParenStop
+    let lookOuter = a:0 >= 3 ? a:3 : v:false
+
+    " look for the outermost paren
+    if lookOuter
+      call cursor(a:lnum, col([a:lnum, '$']))
+      " 1ms timeout
+      let closePos = searchpos(stopPat, 'bcnW', 0, 1)
+      if closePos[0] == a:lnum
+        call cursor(closePos)
+      else
+        call cursor(a:lnum, 1)
+      endif
+    else
+      call cursor(a:lnum, 1)
+    endif
+    " timeout in 2ms to ensure smooth typing experience
+    let parenPos = searchpairpos(startPat, '', stopPat, 'bnW',
+                   \             skipExpr, 0, 2)
+    return parenPos
+endfunction
+
+" For debugging purposes
+function NimLookupBaseParen(lnum, outer)
+  return s:lookupBaseParen(a:lnum, s:ParenStart, s:ParenStop, a:outer)
+endfunction
+
 function GetNimIndent(lnum)
     " If we're in a multi-line string or comment, don't change the indent
-    if synIDattr(synID(a:lnum, 1, v:true), "name") =~ '\(Comment\|String\)$' ||
-          \ getline(a:lnum) =~ '\s*#.*$'
+    if synIDattr(synID(a:lnum, 1, v:true), "name") =~ '\(Comment\|String\|nimCharacter\)$'
       return -1
     endif
 
@@ -70,7 +104,20 @@ function GetNimIndent(lnum)
 
     let prevNonEmptyLine = substitute(s:getLineNoComments(prevNonEmpty),
           \                           '\s\+$', '', '')
-    let prevIndent = indent(prevNonEmpty)
+    let prevParen = s:lookupBaseParen(prevNonEmpty, s:ParenStart, s:ParenStop, v:true)
+    let curParen = s:lookupBaseParen(a:lnum)
+    if curParen == [0, 0]
+      let curParen = s:lookupBaseParen(a:lnum, s:ParenStart, s:ParenStop, v:true)
+      if curParen[0] != a:lnum
+        let curParen = [0, 0]
+      endif
+    endif
+    " we would want to reduce our indent to original level
+    if prevParen == [0, 0] || prevParen == curParen
+      let prevIndent = indent(prevNonEmpty)
+    else
+      let prevIndent = indent(prevParen[0])
+    endif
     let curLine = getline(a:lnum)
     let curIndent = indent(a:lnum)
 
@@ -112,5 +159,47 @@ function GetNimIndent(lnum)
       endif
     endif
 
-    return -1
+    " Dedent paren-like structure
+    " [
+    "   { something }
+    " ] <-- auto dedented
+    if curLine =~ '^\s*\%(' . s:ParenStop . '\)$' && prevParen != [0, 0]
+      let end = curLine[len(curLine) - 1]
+      if end == ')'
+        let start = '('
+      elseif end == ']'
+        let start = '['
+      elseif end == '}'
+        let start = '{'
+      endif
+      let parenLine = s:getLineNoComments(prevParen[0])
+      if len(parenLine) == prevParen[1] && parenLine[prevParen[1] - 1] == start
+        let prevParenIndent = indent(prevParen[0])
+        return prevParenIndent < curIndent ? prevParenIndent : -1
+      else
+        return -1
+      endif
+    endif
+
+    " Generates indent like in NEP #1:
+    " proc something(a: string,
+    "                ^
+    if curParen[0] == prevNonEmpty
+      if prevNonEmptyLine =~ '\.*\%(' . s:ParenStart . '\)$'
+        " Special indent rules:
+        " (
+        "   indent
+        "   ^
+        " )
+        return prevIndent + shiftwidth()
+      elseif s:lookupBaseParen(a:lnum, s:ParenStartDot, s:ParenStopDot) != [0, 0]
+        " Handle {.
+        return curParen[1] + 1
+      else
+        return curParen[1]
+      endif
+    else
+      " only use previous indent if this is the outermost level
+      return curParen == [0, 0] && prevIndent < curIndent ? prevIndent : -1
+    endif
 endfunction
