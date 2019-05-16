@@ -41,8 +41,10 @@ function! s:NewInstance(project, file)
     endif
   endfunction
 
+  let nscmd = exists('g:nim_nimsuggest_cmd') ? g:nim_nimsuggest_cmd : "nimsuggest"
+
   let result.job =
-      \   jobstart(['nimsuggest', '--autobind', '--address:localhost', a:file],
+      \   jobstart([nscmd, '--autobind', '--address:localhost', a:file],
       \            {'on_stdout': function('OnEvent'),
       \             'on_exit': function('OnEvent'),
       \             'buffer': [''],
