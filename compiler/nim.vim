@@ -10,8 +10,8 @@ let current_compiler = "nim"
 
 CompilerSet errorformat=
       \%f(%l\\,\ %c)\ %trror:\ %m,
-      \%f(%l\\,\ %c)\ %tarning:\ %m\ [%s],
-      \%A%f(%l\\,\ %c)\ Hint:\ %m\ [%s],
+      \%f(%l\\,\ %c)\ %tarning:\ %m,
+      \%A%f(%l\\,\ %c)\ Hint:\ %m,
       \%I%f(%l\\,\ %c)\ %m,
       \%-IHint:\ %m,
       \%-ICC:\ %m
