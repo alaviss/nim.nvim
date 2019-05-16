@@ -112,6 +112,13 @@ function! nim#suggest#ProjectStop()
   unlet s:suggestInstances[projectDir]
 endfunction
 
+function! nim#suggest#ProjectStopAll()
+  for key in keys(s:suggestInstances)
+    call jobstop(s:suggestInstances[key].job)
+    unlet s:suggestInstances[key]
+  endfor
+endfunction
+
 function! nim#suggest#ProjectFindOrStart()
   let projectDir = fnamemodify(expand('%:h'), ':p')
   if empty(projectDir)
