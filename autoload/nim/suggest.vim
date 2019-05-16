@@ -12,6 +12,7 @@ function! s:NewInstance(project, file)
   let result = {
       \         'job': -1,
       \         'port': -1,
+      \         'file': '',
       \         'connectQueue': []
       \        }
 
@@ -21,13 +22,14 @@ function! s:NewInstance(project, file)
       call extend(self.buffer, a:data[1:])
       if len(self.buffer) > 1
         let self.instance.port = str2nr(self.buffer[0])
+        let self.instance.file = self.file
         for F in self.instance.connectQueue
           call F(v:false)
         endfor
         unlet self.instance.connectQueue
       endif
     elseif a:event == 'exit'
-      echomsg 'nimsuggest instance for project: `' . self.file . "'" .
+      echomsg 'nimsuggest instance for project: `' . self.project . "'" .
       \       ' exited with exitcode: ' . a:data
       let self.instance.job = -1
       let self.instance.port = -1
@@ -45,7 +47,8 @@ function! s:NewInstance(project, file)
       \             'on_exit': function('OnEvent'),
       \             'buffer': [''],
       \             'instance': result,
-      \             'file': a:project})
+      \             'project': a:project,
+      \             'file': a:file})
   if result.job == -1
     echoerr 'Unable to launch nimsuggest for file: `' . a:file . "'"
   endif
@@ -63,7 +66,7 @@ function! s:FindProjectInstance(dir)
       let result = key
     endif
   endfor
-  if empty(result) || s:suggestInstances[result].job == -1
+  if empty(result)
     return ''
   endif
   return result
@@ -118,6 +121,10 @@ function! nim#suggest#ProjectFindOrStart()
   let projectDir = s:FindProjectInstance(projectDir)
   if empty(projectDir)
     return nim#suggest#ProjectStart()
+  endif
+  let inst = s:suggestInstances[projectDir]
+  if inst.job == -1 && len(inst.file) > 0
+    return nim#suggest#ProjectFileStart(inst.file)
   endif
   return {'directory': projectDir, 'instance': s:suggestInstances[projectDir]}
 endfunction
