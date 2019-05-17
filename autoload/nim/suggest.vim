@@ -6,6 +6,16 @@
 " see the file "license.txt" included within this distribution.
 
 let s:suggestInstances = {}
+let s:suggestCmd = exists('g:nim_nimsuggest_cmd') ? g:nim_nimsuggest_cmd : 'nimsuggest'
+
+function! s:CheckCompatible()
+  let output = system([s:suggestCmd, '--help'])
+  let result = output =~ '--autobind'
+  if !result
+    echomsg 'nimsuggest version >= 0.19.9 is required for this plugin'
+  endif
+  return result
+endfunction
 
 function! s:NewInstance(project, file)
   " connectQueue = [function(failed: bool)] called after port is available
@@ -41,10 +51,9 @@ function! s:NewInstance(project, file)
     endif
   endfunction
 
-  let nscmd = exists('g:nim_nimsuggest_cmd') ? g:nim_nimsuggest_cmd : "nimsuggest"
 
   let result.job =
-      \   jobstart([nscmd, '--autobind', '--address:localhost', a:file],
+      \   jobstart([s:suggestCmd, '--autobind', '--address:localhost', a:file],
       \            {'on_stdout': function('OnEvent'),
       \             'on_exit': function('OnEvent'),
       \             'buffer': [''],
@@ -89,6 +98,9 @@ function! nim#suggest#FindInstance(...)
 endfunction
 
 function! nim#suggest#ProjectFileStart(file)
+  if !s:CheckCompatible()
+    return {}
+  endif
   let projectFile = fnamemodify(a:file, ':p')
   if !filereadable(projectFile)
     echomsg 'nimsuggest is only available to files on disk'
