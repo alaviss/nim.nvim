@@ -42,15 +42,16 @@ endfunction
 function s:getLineNoComments(lnum)
     let line = getline(a:lnum)
     let lineLen = strlen(line)
+    let result = line
     if synIDattr(synID(a:lnum, lineLen, v:true), "name") =~
           \ '\(Comment\|Todo\)$'
-      return strpart(line, 0,
-            \ s:binaryLook(1, lineLen,
-            \              {x -> synIDattr(synID(a:lnum, x, v:true), "name") =~
-            \              '\(Comment\|Todo\)$'}) - 1)
-    else
-      return line
+      let result = strpart(line, 0,
+           \               s:binaryLook(1, lineLen,
+           \                            {x -> synIDattr(
+           \                                    synID(a:lnum, x, v:true), "name") =~
+           \                            '\(Comment\|Todo\)$'}) - 1)
     endif
+    return substitute(result, '\s\+$', '', '')
 endfunction
 
 let s:ParenStartDot = '(\.\|{\.\|[\.'
@@ -102,8 +103,7 @@ function GetNimIndent(lnum)
       return 0
     endif
 
-    let prevNonEmptyLine = substitute(s:getLineNoComments(prevNonEmpty),
-          \                           '\s\+$', '', '')
+    let prevNonEmptyLine = s:getLineNoComments(prevNonEmpty)
     let prevParen = s:lookupBaseParen(prevNonEmpty, s:ParenStart, s:ParenStop, v:true)
     let curParen = s:lookupBaseParen(a:lnum)
     if curParen == [0, 0]
@@ -118,7 +118,7 @@ function GetNimIndent(lnum)
     else
       let prevIndent = indent(prevParen[0])
     endif
-    let curLine = getline(a:lnum)
+    let curLine = s:getLineNoComments(a:lnum)
     let curIndent = indent(a:lnum)
 
     if prevNonEmptyLine =~ '\v%(\=|:)\s*$'
@@ -163,8 +163,9 @@ function GetNimIndent(lnum)
     " [
     "   { something }
     " ] <-- auto dedented
-    if curLine =~ '^\s*\%(' . s:ParenStop . '\)$' && prevParen != [0, 0]
+    if curLine =~ '^\s*\%(' . s:ParenStop . '\)$' && curParen != [0, 0]
       let end = curLine[len(curLine) - 1]
+      let start = ''
       if end == ')'
         let start = '('
       elseif end == ']'
@@ -172,10 +173,10 @@ function GetNimIndent(lnum)
       elseif end == '}'
         let start = '{'
       endif
-      let parenLine = s:getLineNoComments(prevParen[0])
-      if len(parenLine) == prevParen[1] && parenLine[prevParen[1] - 1] == start
-        let prevParenIndent = indent(prevParen[0])
-        return prevParenIndent < curIndent ? prevParenIndent : -1
+      let parenLine = s:getLineNoComments(curParen[0])
+      if len(parenLine) == curParen[1] && parenLine[curParen[1] - 1] == start
+        let curParenIndent = indent(curParen[0])
+        return curParenIndent < curIndent ? curParenIndent : -1
       else
         return -1
       endif
