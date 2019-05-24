@@ -1,6 +1,6 @@
 proc longProc(a: int,
               b: string) {.noSideEffects.} =
-  #! 2 disabled
+  #! 2
 
 proc longProc(a: int,
               b: string)

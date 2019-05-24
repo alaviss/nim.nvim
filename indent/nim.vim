@@ -64,10 +64,13 @@ function s:lookupBaseParen(lnum, ...)
     let startPat = a:0 >= 1 ? a:1 : s:ParenStart
     let stopPat = a:0 >= 2 ? a:2 : s:ParenStop
     let lookOuter = a:0 >= 3 ? a:3 : v:false
+    let moveCursor = a:0 >= 4 ? a:4 : v:true
 
     " look for the outermost paren
     if lookOuter
-      call cursor(a:lnum, col([a:lnum, '$']))
+      if moveCursor
+        call cursor(a:lnum, col([a:lnum, '$']))
+      endif
       " 1ms timeout
       let closePos = searchpos(stopPat, 'bcnW', 0, 1)
       if closePos[0] == a:lnum
@@ -75,7 +78,7 @@ function s:lookupBaseParen(lnum, ...)
       else
         call cursor(a:lnum, 1)
       endif
-    else
+    elseif moveCursor
       call cursor(a:lnum, 1)
     endif
     " timeout in 2ms to ensure smooth typing experience
@@ -122,6 +125,18 @@ function GetNimIndent(lnum)
     let curIndent = indent(a:lnum)
 
     if prevNonEmptyLine =~ '\v%(\=|:)\s*$'
+      " handle
+      " proc test(a,
+      "           b) {.pragma.} =
+      "   ^
+      if prevParen != [0, 0] && (prevNonEmptyLine[prevParen[1] - 1] == '{' &&
+      \                          prevNonEmptyLine[prevParen[1]] == '.')
+        call cursor(prevParen[0], prevParen[1])
+        let nonPragPrevParen = s:lookupBaseParen(prevNonEmpty, s:ParenStart, s:ParenStop, v:true, v:false)
+        if nonPragPrevParen != [0, 0]
+          let prevIndent = indent(nonPragPrevParen[0])
+        endif
+      endif
       return prevIndent + shiftwidth()
     endif
 
