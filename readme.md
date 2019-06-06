@@ -9,10 +9,7 @@ This plugin is still pretty much a work-in-progress.
 #### Requirements
 
 - neovim >= 0.3.0 (nimsuggest integration requires TCP byte sockets)
-- Latest development version of nimsuggest (`--autobind` is required, you can
-  use [choosenim] to install this version)
-
-**Note**: The current stable version (0.19.x) will not work with this plugin.
+- nim >= 0.20 ([choosenim] can be used to install this version)
 
 #### Installation
 
