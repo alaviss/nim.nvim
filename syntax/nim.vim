@@ -47,6 +47,8 @@ syntax region nimRawString
 syntax region nimRawString
       \ start=+r"""+ end=+"""+
       \ contains=@Spell
+syntax match nimString +"""""""""+
+syntax match nimRawString +r"""""""""+
 syntax match nimCharacter +'\%(\\\%([rcnlftv\\"'abe]\|x\x\{2}\|\d\+\)\|.\)'+ contains=nimEscapeChar
 
 syntax match nimEscapeChar +\\[rcnlftv\\"'abe]+ contained
