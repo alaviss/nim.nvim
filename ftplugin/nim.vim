@@ -28,11 +28,13 @@ endif
 compiler nim
 
 " section movement
-noremap <script> <buffer> <silent> [[ :call <SID>nimNextSection(2, v:true)<lf>
-noremap <script> <buffer> <silent> ]] :call <SID>nimNextSection(2, v:false)<lf>
+if !exists('g:nim_noremap')
+  noremap <script> <buffer> <silent> [[ :call <SID>nimNextSection(2, v:true)<lf>
+  noremap <script> <buffer> <silent> ]] :call <SID>nimNextSection(2, v:false)<lf>
 
-noremap <script> <buffer> <silent> [] :call <SID>nimNextSection(1, v:true)<lf>
-noremap <script> <buffer> <silent> ][ :call <SID>nimNextSection(1, v:false)<lf>
+  noremap <script> <buffer> <silent> [] :call <SID>nimNextSection(1, v:true)<lf>
+  noremap <script> <buffer> <silent> ][ :call <SID>nimNextSection(1, v:false)<lf>
+endif
 
 " type:
 "   1. any line that starts with a non-whitespace char following a blank line,
@@ -61,5 +63,7 @@ noremap <script> <buffer> <silent> <Plug>NimGoToDefBuf :call nim#suggest#def#GoT
 noremap <script> <buffer> <silent> <Plug>NimGoToDefSplit :call nim#suggest#def#GoTo('s')<lf>
 noremap <script> <buffer> <silent> <Plug>NimGoToDefVSplit :call nim#suggest#def#GoTo('v')<lf>
 
-nmap gd <Plug>NimGoToDefBuf
-nmap gD <Plug>NimGoToDefSplit
+if !exists('g:nim_noremap')
+  nmap gd <Plug>NimGoToDefBuf
+  nmap gD <Plug>NimGoToDefSplit
+endif
