@@ -22,11 +22,15 @@ setlocal expandtab
 if !exists("g:nim_nep1") || g:nim_nep1 != 0
   setlocal shiftwidth=2 softtabstop=2
 endif
+" compat with g:nim_noremap
+if exists('g:nim_noremap')
+  let g:no_nim_maps = 1
+endif
 
 compiler nim
 
 " section movement
-if !exists('g:nim_noremap')
+if !exists('g:no_plugin_maps') && !exists('g:no_nim_maps')
   noremap <script> <buffer> <silent> [[ :call <SID>nimNextSection(2, v:true)<lf>
   noremap <script> <buffer> <silent> ]] :call <SID>nimNextSection(2, v:false)<lf>
 
@@ -61,7 +65,7 @@ noremap <script> <buffer> <silent> <Plug>NimGoToDefBuf :call nim#suggest#def#GoT
 noremap <script> <buffer> <silent> <Plug>NimGoToDefSplit :call nim#suggest#def#GoTo('s')<lf>
 noremap <script> <buffer> <silent> <Plug>NimGoToDefVSplit :call nim#suggest#def#GoTo('v')<lf>
 
-if !exists('g:nim_noremap')
+if !exists('no_plugin_maps') && !exists('g:no_nim_maps')
   nmap gd <Plug>NimGoToDefBuf
   nmap gD <Plug>NimGoToDefSplit
 endif
