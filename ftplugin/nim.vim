@@ -31,18 +31,26 @@ compiler nim
 
 " section movement
 if !exists('g:no_plugin_maps') && !exists('g:no_nim_maps')
-  noremap <script> <buffer> <silent> [[ :call <SID>nimNextSection(2, v:true)<lf>
-  noremap <script> <buffer> <silent> ]] :call <SID>nimNextSection(2, v:false)<lf>
+  noremap <script> <buffer> <silent> [[ :<C-U>call <SID>nimNextSection(2, v:true, v:false)<lf>
+  noremap <script> <buffer> <silent> ]] :<C-U>call <SID>nimNextSection(2, v:false, v:false)<lf>
 
-  noremap <script> <buffer> <silent> [] :call <SID>nimNextSection(1, v:true)<lf>
-  noremap <script> <buffer> <silent> ][ :call <SID>nimNextSection(1, v:false)<lf>
+  noremap <script> <buffer> <silent> [] :<C-U>call <SID>nimNextSection(1, v:true, v:false)<lf>
+  noremap <script> <buffer> <silent> ][ :<C-U>call <SID>nimNextSection(1, v:false, v:false)<lf>
+
+  xnoremap <script> <buffer> <silent> [[ :<C-U>call <SID>nimNextSection(2, v:true, v:true)<lf>
+  xnoremap <script> <buffer> <silent> ]] :<C-U>call <SID>nimNextSection(2, v:false, v:true)<lf>
+
+  xnoremap <script> <buffer> <silent> [] :<C-U>call <SID>nimNextSection(1, v:true, v:true)<lf>
+  xnoremap <script> <buffer> <silent> ][ :<C-U>call <SID>nimNextSection(1, v:false, v:true)<lf>
 endif
 
 " type:
 "   1. any line that starts with a non-whitespace char following a blank line,
 "      or the first line
 "   2. top-level block-like statements
-function! s:nimNextSection(type, backwards)
+function! s:nimNextSection(type, backwards, visual)
+  let count = v:count1
+
   if a:backwards
     let backward = 'b'
   else
@@ -57,7 +65,15 @@ function! s:nimNextSection(type, backwards)
     let flag = ''
   endif
 
-  call search(pattern, backward . flag . 'W')
+  if a:visual
+    normal! gv
+  endif
+
+  let i = 0
+  while i < count
+    call search(pattern, backward . flag . 'W')
+    let i += 1
+  endwhile
 endfunction
 
 " go to definition
