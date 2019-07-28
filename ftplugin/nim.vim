@@ -76,6 +76,10 @@ function! s:nimNextSection(type, backwards, visual)
   endwhile
 endfunction
 
+" commands
+" find references to symbol on cursor
+command! NimReferences call nim#suggest#use#ShowReferences()
+
 " scripted mappings
 noremap <script> <buffer> <silent> <Plug>NimGoToDefBuf :call nim#suggest#def#GoTo('b')<lf>
 noremap <script> <buffer> <silent> <Plug>NimGoToDefSplit :call nim#suggest#def#GoTo('s')<lf>

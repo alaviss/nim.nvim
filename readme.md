@@ -26,6 +26,7 @@ This plugin is still pretty much a work-in-progress.
 - Semantic highlighting with nimsuggest. Highlight as you type (experimental)
 - "Go to Definition" support using nimsuggest.
 - Autocompletion using nimsuggest.
+- Find references to a symbol.
 - Section movements!
 - NEP-1 style indentation!
 - And more...
