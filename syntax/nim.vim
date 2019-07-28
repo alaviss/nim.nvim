@@ -42,13 +42,13 @@ syntax region nimString
       \ start=+"""+ end=+"""+
       \ contains=nimEscapeStr,nimEscapeChar,@Spell
 syntax region nimRawString
-      \ start=+r"+ end=+"+
+      \ start=+\<r"+ end=+"+
       \ contains=@Spell
 syntax region nimRawString
-      \ start=+r"""+ end=+"""+
+      \ start=+\<r"""+ end=+"""+
       \ contains=@Spell
 syntax match nimString +"""""""""+
-syntax match nimRawString +r"""""""""+
+syntax match nimRawString +\<r"""""""""+
 syntax match nimCharacter +'\%(\\\%([rcnlftv\\"'abe]\|x\x\{2}\|\d\+\)\|.\)'+ contains=nimEscapeChar
 
 syntax match nimEscapeChar +\\[rcnlftv\\"'abe]+ contained
