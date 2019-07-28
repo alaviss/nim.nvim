@@ -76,12 +76,14 @@ function! s:nimNextSection(type, backwards, visual)
   endwhile
 endfunction
 
-" go to definition
+" scripted mappings
 noremap <script> <buffer> <silent> <Plug>NimGoToDefBuf :call nim#suggest#def#GoTo('b')<lf>
 noremap <script> <buffer> <silent> <Plug>NimGoToDefSplit :call nim#suggest#def#GoTo('s')<lf>
 noremap <script> <buffer> <silent> <Plug>NimGoToDefVSplit :call nim#suggest#def#GoTo('v')<lf>
+noremap <script> <buffer> <silent> <Plug>NimOutline :call nim#suggest#outline#OpenLocList()<lf>
 
 if !exists('no_plugin_maps') && !exists('g:no_nim_maps')
   nmap gd <Plug>NimGoToDefBuf
   nmap gD <Plug>NimGoToDefSplit
+  nmap gO <Plug>NimOutline
 endif
