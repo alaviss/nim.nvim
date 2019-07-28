@@ -14,7 +14,7 @@ function! s:OnReply(reply) dict
        \             'bufnr': self.buffer,
        \             'filename': a:reply[4],
        \             'lnum': str2nr(a:reply[5]),
-       \             'col': str2nr(a:reply[6]),
+       \             'col': str2nr(a:reply[6] + 1),
        \             'text': prefix . ' ' . join(split(a:reply[2], '\i\.\zs')[1:], '')
        \          }],
        \          'a'
