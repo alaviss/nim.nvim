@@ -37,7 +37,7 @@ function! nim#suggest#outline#OpenLocList()
       \         'window': win_getid()
       \      }
   let w:nimSugOutlineLock = v:true
-  call setloclist(opts.window, [], 'r', {'title': 'Outline'})
+  call setloclist(opts.window, [], ' ', {'title': 'Outline'})
   if nim#suggest#utils#Query(bufnr(''), line('.'), col('.'), 'outline', opts, v:false) == 0
     lopen
   endif
