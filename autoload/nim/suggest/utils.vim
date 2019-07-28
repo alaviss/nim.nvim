@@ -59,12 +59,16 @@ endfunction
 function! nim#suggest#utils#Query(buf, line, col, query, opts, queue, ...)
   " opts = { 'onReply': function(reply) invoked for each reply,
   "          'onEnd': function() invoked after query end (optional) }
+  " retVal:
+  "   1 = queued
+  "   0 = executed
+  "  -1 = failed
   let failed = a:0 >= 1 ? a:1 : v:false
   if failed
     if has_key(a:opts, 'onEnd')
       call a:opts.onEnd()
     endif
-    return
+    return -1
   endif
   let instance = nim#suggest#FindInstance(bufname(a:buf))
   if empty(instance)
@@ -72,20 +76,20 @@ function! nim#suggest#utils#Query(buf, line, col, query, opts, queue, ...)
     if has_key(a:opts, 'onEnd')
       call a:opts.onEnd()
     endif
-    return
+    return -1
   endif
   if !a:queue && instance.instance.port == -1
     echomsg 'nimsuggest is not ready for this project'
     if has_key(a:opts, 'onEnd')
       call a:opts.onEnd()
     endif
-    return
+    return -1
   elseif instance.instance.port == -1
     call nim#suggest#RunAfterReady(instance.instance,
          \                         function('nim#suggest#utils#Query',
          \                                  [a:buf, a:line, a:col, a:query,
          \                                   a:opts, a:queue]))
-    return
+    return 1
   endif
   let fileQuery = nim#suggest#utils#MakeFileQuery(a:buf, a:line, a:col)
   let opts = {'on_data': function('s:BufferedCallback'),
@@ -100,7 +104,8 @@ function! nim#suggest#utils#Query(buf, line, col, query, opts, queue, ...)
   if chan == 0
     echomsg 'unable to connect to nimsuggest'
     call opts['utils#on_end']()
-    return
+    return -1
   endif
   call chansend(chan, [a:query . ' ' . fileQuery.query, ''])
+  return 0
 endfunction
