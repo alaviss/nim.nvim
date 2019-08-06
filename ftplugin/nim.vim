@@ -27,6 +27,13 @@ if exists('g:nim_noremap')
   let g:no_nim_maps = 1
 endif
 
+if exists('loaded_matchit') && !exists('b:match_words')
+  let b:match_ignorecase = 0
+  let b:match_words = '\<\%(case\|if\|when\)\>:\<of\>:\<elif\>:\<else\>,' .
+      \               '\<try\>:\<except\>:\<finally\>,'
+  let b:match_skip = "synIDattr(synID(line('.'), col('.'), v:false), 'name') =~ '\\(Comment\\|String\\|nimCharacter\\)$'"
+endif
+
 compiler nim
 
 " section movement
