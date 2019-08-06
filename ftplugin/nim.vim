@@ -76,6 +76,15 @@ function! s:nimNextSection(type, backwards, visual)
   endwhile
 endfunction
 
+function! s:nimStar(word)
+  let regex = nim#StarSearchRegex()
+  if len(regex) > 0
+    return 'silent normal! /' . (a:word ? '\<' : '') . regex . (a:word ? '\>' : '') . "\n"
+  else
+    return ''
+  endif
+endfunction
+
 " commands
 " find references to symbol on cursor
 command! NimReferences call nim#suggest#use#ShowReferences()
@@ -85,9 +94,14 @@ noremap <script> <buffer> <silent> <Plug>NimGoToDefBuf :call nim#suggest#def#GoT
 noremap <script> <buffer> <silent> <Plug>NimGoToDefSplit :call nim#suggest#def#GoTo('s')<lf>
 noremap <script> <buffer> <silent> <Plug>NimGoToDefVSplit :call nim#suggest#def#GoTo('v')<lf>
 noremap <script> <buffer> <silent> <Plug>NimOutline :call nim#suggest#outline#OpenLocList()<lf>
+" these have to be implemented like this due to function-search-undo
+noremap <script> <buffer> <silent> <Plug>NimStar :execute <SID>nimStar(v:true)<lf>
+noremap <script> <buffer> <silent> <Plug>NimGStar :execute <SID>nimStar(v:false)<lf>
 
 if !exists('no_plugin_maps') && !exists('g:no_nim_maps')
   nmap gd <Plug>NimGoToDefBuf
   nmap gD <Plug>NimGoToDefSplit
   nmap gO <Plug>NimOutline
+  nmap * <Plug>NimStar
+  nmap g* <Plug>NimGStar
 endif
