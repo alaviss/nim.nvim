@@ -122,13 +122,17 @@ endfunction
 
 function! nim#suggest#ProjectStop()
   let projectDir = fnamemodify(expand('%:h'), ':p')
-  call jobstop(s:suggestInstances[projectDir].job)
+  if s:suggestInstances[projectDir].job != -1
+    call jobstop(s:suggestInstances[projectDir].job)
+  endif
   unlet s:suggestInstances[projectDir]
 endfunction
 
 function! nim#suggest#ProjectStopAll()
   for key in keys(s:suggestInstances)
-    call jobstop(s:suggestInstances[key].job)
+    if s:suggestInstances[key].job != -1
+      call jobstop(s:suggestInstances[key].job)
+    endif
     unlet s:suggestInstances[key]
   endfor
 endfunction
