@@ -31,23 +31,24 @@ function! nim#suggest#FindInstance(...)
   return s:instances[project]
 endfunction
 
-function! nim#suggest#ProjectFileStart(file)
-  function! OnEvent(event, message) abort dict
-    if a:event == 'error' && a:message =~ '^suggest-manager-file'
-      echomsg 'nimsuggest is only available to files on disk'
-    elseif a:event == 'exit' && a:message != 0
-      echomsg 'nimsuggest instance for project' self.project()
-      \       'stopped with exitcode:' a:message
-    endif
-  endfunction
+function! s:onEvent(event, message) abort dict
+  if a:event == 'error' && a:message =~ '^suggest-manager-file'
+    echomsg 'nimsuggest is only available to files on disk'
+    unlet s:instances[self.project()]
+  elseif a:event == 'exit' && a:message != 0
+    echomsg 'nimsuggest instance for project' self.project()
+    \       'stopped with exitcode:' a:message
+  endif
+endfunction
 
+function! nim#suggest#ProjectFileStart(file)
   let project = fnamemodify(a:file, ':p:h')
   if has_key(s:instances, project) && s:instances[project].isRunning()
     echomsg 'An instance of nimsuggest has already been started for this project'
     return s:instances[project]
   endif
   try
-    let s:instances[project] = nim#suggest#manager#NewInstance(s:config, a:file, funcref('OnEvent'))
+    let s:instances[project] = nim#suggest#manager#NewInstance(s:config, a:file, function('s:onEvent'))
   catch /^suggest-manager-compat/
     echomsg 'nimsuggest version >= 0.20.0 is required for this plugin'
   endtry
