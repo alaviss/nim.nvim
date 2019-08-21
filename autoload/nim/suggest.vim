@@ -5,115 +5,53 @@
 " Licensed under the terms of the ISC license,
 " see the file "license.txt" included within this distribution.
 
-let s:suggestInstances = {}
-let s:suggestCmd = exists('g:nim_nimsuggest_cmd') ? g:nim_nimsuggest_cmd : 'nimsuggest'
+let s:instances = {}
+let s:config = {'nimsuggest': 'nimsuggest', 'extraArgs': []}
 
-function! s:CheckCompatible()
-  let output = system([s:suggestCmd, '--help'])
-  let result = output =~ '--autobind'
-  if !result
-    echomsg 'nimsuggest version >= 0.19.9 is required for this plugin'
-  endif
-  return result
-endfunction
-
-function! s:NewInstance(project, file)
-  " connectQueue = [function(failed: bool)] called after port is available
-  let result = {
-      \         'job': -1,
-      \         'port': -1,
-      \         'file': '',
-      \         'connectQueue': []
-      \        }
-
-  function! OnEvent(job, data, event) abort dict
-    if a:event == 'stdout' && self.instance.port == -1
-      let self.buffer[-1] .= a:data[0]
-      call extend(self.buffer, a:data[1:])
-      if len(self.buffer) > 1
-        let self.instance.port = str2nr(self.buffer[0])
-        let self.instance.file = self.file
-        for F in self.instance.connectQueue
-          call F(v:false)
-        endfor
-        unlet self.instance.connectQueue
-      endif
-    elseif a:event == 'exit'
-      echomsg 'nimsuggest instance for project: `' . self.project . "'" .
-      \       ' exited with exitcode: ' . a:data
-      let self.instance.job = -1
-      let self.instance.port = -1
-      if has_key(self.instance, 'connectQueue')
-        for F in self.instance.connectQueue
-          call F(v:true)
-        endfor
-      endif
-    endif
-  endfunction
-
-
-  let result.job =
-      \   jobstart([s:suggestCmd, '--autobind', '--address:localhost', a:file],
-      \            {'on_stdout': function('OnEvent'),
-      \             'on_exit': function('OnEvent'),
-      \             'buffer': [''],
-      \             'instance': result,
-      \             'project': a:project,
-      \             'file': a:file})
-  if result.job == -1
-    echoerr 'Unable to launch nimsuggest for file: `' . a:file . "'"
-  endif
-
-  return result
-endfunction
-
-function! s:FindProjectInstance(dir)
+function! s:findProjectInstance(dir)
   if empty(a:dir)
     return ''
   endif
   let result = ''
-  for key in keys(s:suggestInstances)
-    if stridx(a:dir, key) == 0 && strlen(key) > strlen(result)
+  let matchingRegex = '\V\^' . escape(a:dir, '\')
+  for key in keys(s:instances)
+    if a:dir =~ matchingRegex && strlen(key) > strlen(result)
       let result = key
     endif
   endfor
-  if empty(result)
-    return ''
-  endif
   return result
 endfunction
 
 function! nim#suggest#FindInstance(...)
-  let projectDir = a:0 >= 1 ? fnamemodify(a:1, ':h') : expand('%:h')
-  let projectDir = fnamemodify(projectDir, ':p')
-  if empty(projectDir)
-    echomsg 'nimsuggest is only available to files on disk'
+  let project = a:0 >= 1 ? fnamemodify(a:1, ':p:h') : expand('%:p:h')
+  let project = s:findProjectInstance(project)
+  if empty(project)
     return {}
   endif
-  let projectDir = s:FindProjectInstance(projectDir)
-  if empty(projectDir)
-    return {}
-  endif
-  return {'directory': projectDir, 'instance': s:suggestInstances[projectDir]}
+  return s:instances[project]
 endfunction
 
 function! nim#suggest#ProjectFileStart(file)
-  if !s:CheckCompatible()
-    return {}
-  endif
-  let projectFile = fnamemodify(a:file, ':p')
-  if !filereadable(projectFile)
-    echomsg 'nimsuggest is only available to files on disk'
-    return {}
-  endif
-  let projectDir = fnamemodify(fnamemodify(projectFile, ':h'), ':p')
-  if has_key(s:suggestInstances, projectDir) &&
-  \  s:suggestInstances[projectDir].job != -1
+  function! OnEvent(event, message) abort dict
+    if a:event == 'error' && a:message =~ '^suggest-manager-file'
+      echomsg 'nimsuggest is only available to files on disk'
+    elseif a:event == 'exit' && a:message != 0
+      echomsg 'nimsuggest instance for project' self.project()
+      \       'stopped with exitcode:' a:message
+    endif
+  endfunction
+
+  let project = fnamemodify(a:file, ':p:h')
+  if has_key(s:instances, project) && s:instances[project].isRunning()
     echomsg 'An instance of nimsuggest has already been started for this project'
-    return {'directory': projectDir, 'instance': s:suggestInstances[projectDir]}
+    return s:instances[project]
   endif
-  let s:suggestInstances[projectDir] = s:NewInstance(projectDir, projectFile)
-  return {'directory': projectDir, 'instance': s:suggestInstances[projectDir]}
+  try
+    let s:instances[project] = nim#suggest#manager#NewInstance(s:config, a:file, funcref('OnEvent'))
+  catch /^suggest-manager-compat/
+    echomsg 'nimsuggest version >= 0.20.0 is required for this plugin'
+  endtry
+  return s:instances[project]
 endfunction
 
 function! nim#suggest#ProjectStart()
@@ -121,62 +59,25 @@ function! nim#suggest#ProjectStart()
 endfunction
 
 function! nim#suggest#ProjectStop()
-  let projectDir = fnamemodify(expand('%:h'), ':p')
-  if s:suggestInstances[projectDir].job != -1
-    call jobstop(s:suggestInstances[projectDir].job)
-  endif
-  unlet s:suggestInstances[projectDir]
+  let project = fnamemodify(expand('%:h'), ':p')
+  call s:instances[project].stop()
 endfunction
 
 function! nim#suggest#ProjectStopAll()
-  for key in keys(s:suggestInstances)
-    if s:suggestInstances[key].job != -1
-      call jobstop(s:suggestInstances[key].job)
-    endif
-    unlet s:suggestInstances[key]
+  for project in keys(s:instances)
+    call s:instances[project].stop()
   endfor
 endfunction
 
 function! nim#suggest#ProjectFindOrStart()
-  let projectDir = fnamemodify(expand('%:h'), ':p')
-  if empty(projectDir)
-    echomsg 'nimsuggest is only available to files on disk'
-    return {}
-  endif
-  let projectDir = s:FindProjectInstance(projectDir)
-  if empty(projectDir)
+  let project = expand('%:p:h')
+  let project = s:findProjectInstance(project)
+  if empty(project)
     return nim#suggest#ProjectStart()
   endif
-  let inst = s:suggestInstances[projectDir]
-  if inst.job == -1 && len(inst.file) > 0
-    return nim#suggest#ProjectFileStart(inst.file)
+  let inst = s:instances[project]
+  if !inst.isRunning()
+    call inst.start()
   endif
-  return {'directory': projectDir, 'instance': s:suggestInstances[projectDir]}
-endfunction
-
-function! nim#suggest#RunAfterReady(instance, Func)
-  if empty(a:instance)
-    return
-  endif
-  if a:instance.port == -1
-    call add(a:instance.connectQueue, a:Func)
-  else
-    call a:Func(v:false)
-  endif
-endfunction
-
-function! nim#suggest#Connect(instance, opts)
-  if empty(a:instance) || a:instance.port == -1
-    echoerr 'invalid instance specified'
-    return 0
-  endif
-  let channel = 0
-  try
-    let channel = sockconnect('tcp', 'localhost:' . a:instance.port, a:opts)
-  finally
-    if channel == 0
-      return 0
-    endif
-    return channel
-  endtry
+  return inst
 endfunction
