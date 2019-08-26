@@ -41,6 +41,10 @@ function! nim#suggest#utils#Query(buf, line, col, query, opts, queue)
   "   0 = executed
   "  -1 = failed
   let instance = nim#suggest#FindInstance(bufname(a:buf))
+  if empty(instance)
+    echomsg 'no nimsuggest instance is running for this project'
+    return -1
+  endif
 
   let scoped = {} " use a dummy dict to create anonymous functions
   function scoped.onSuggestReply(reply) abort closure
