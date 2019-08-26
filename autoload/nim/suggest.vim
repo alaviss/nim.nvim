@@ -60,8 +60,8 @@ function! nim#suggest#ProjectStart()
 endfunction
 
 function! nim#suggest#ProjectStop()
-  let project = fnamemodify(expand('%:h'), ':p')
-  call s:instances[project].stop()
+  let instance = nim#suggest#FindInstance()
+  call instance.stop()
 endfunction
 
 function! nim#suggest#ProjectStopAll()
