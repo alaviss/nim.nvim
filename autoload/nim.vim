@@ -27,7 +27,7 @@ function nim#StarSearchRegex()
   while start > 0 && line[start] =~ '\k\|\w'
     let start -= 1
   endwhile
-  let match = matchstrpos(line, '\a\k\+', start)
+  let match = matchstrpos(line, '\a\k*', start)
   if match[0] == ''
     return ''
   endif
