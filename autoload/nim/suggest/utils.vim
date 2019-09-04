@@ -5,11 +5,16 @@
 " Licensed under the terms of the ISC license,
 " see the file "license.txt" included within this distribution.
 
+" Creates an `on_data`-compatible callback that buffers data by line.
+"
+" cb: function(chan, line, stream) dict
+"   chan corresponds to the channel number
+"   stream corresponds to normal stream names used by neovim.
+"   line is the buffered line. On EOF, an empty string is passed.
+"   If a line is empty, a literal newline (\n) will be passed instead.
+"
+" The callback will be called with the assigned Dict as it's Dict.
 function! nim#suggest#utils#BufferNewline(cb) abort
-  " cb: function(chan, line, stream) dict
-  "   stream corresponds to normal stream names used by neovim.
-  "   an empty string will be passed to line on EOF. If a line is empty, a
-  "   newline will be passed instead.
   let scoped = {}
   let buffer = ['']
   function! scoped.bufCb(chan, data, stream) abort closure
@@ -33,51 +38,37 @@ function! nim#suggest#utils#BufferNewline(cb) abort
   return scoped.bufCb
 endfunction
 
-function! nim#suggest#utils#Query(buf, line, col, query, opts, queue)
-  " opts = { 'onReply': function(reply) invoked for each reply,
-  "          'onEnd': function() invoked after query end (optional) }
-  " retVal:
-  "   1 = queued
-  "   0 = executed
-  "  -1 = failed
-  let instance = nim#suggest#FindInstance(bufname(a:buf))
+" Convenient wrapper for querying nimsuggest
+"
+" This wrapper abstracts away exceptions and the need to find a nimsuggest
+" instance. Exceptions are displayed with `echomsg` to the user.
+"
+" command: same as instance.query()
+" opts: same as instance.query()
+" mustReady: same as instance.query()
+" start: start a nimsuggest instance if none could be found
+"
+" Will return 0 on success and -1 on failure
+function! nim#suggest#utils#Query(command, opts, ...)
+  let mustReady = a:0 >= 1 ? a:1 : v:false
+  let start = a:0 >= 2 ? a:2 : v:false
+
+  let filename = bufname(has_key(a:opts, 'buffer') ? a:opts.buffer : '')
+  let instance = nim#suggest#FindInstance(filename)
   if empty(instance)
-    echomsg 'no nimsuggest instance is running for this project'
-    return -1
-  endif
-
-  let scoped = {} " use a dummy dict to create anonymous functions
-  function scoped.onSuggestReply(reply) abort closure
-    if empty(a:reply)
-      if has_key(self, 'onEnd')
-        call self.onEnd()
-      endif
-      return
+    if !start
+      echomsg 'no nimsuggest instance is running for this project'
+      return -1
+    else
+      let instance = nim#suggest#ProjectFileStart(filename)
     endif
-
-    call self.onReply(a:reply)
-  endfunction
-
-  let opts = {'on_data': scoped.onSuggestReply,
-      \       'buffer': a:buf}
-  if a:line >= 0 && a:col >= 0
-    let opts['pos'] = [a:line, a:col]
   endif
-  call extend(opts, a:opts)
-  if !has_key(opts, 'onReply') || empty(opts.onReply)
-    throw 'suggest-utils-query: reply callback required'
-    return -1
-  endif
+
   try
-    call instance.query(a:query, opts, !a:queue)
+    call instance.query(a:command, a:opts, mustReady)
   catch
-    call function(scoped.onSuggestReply, opts)([])
     echomsg v:exception
     return -1
   endtry
-  if a:queue
-    return 1
-  else
-    return 0
-  endif
+  return 0
 endfunction

@@ -5,52 +5,63 @@ let s:sugToCompleteType = {'skProc': 'f', 'skFunc': 'f', 'skMethod': 'f',
     \                      'skField': 'm', 'skEnumField': 'm', 'skForVar': 'v',
     \                      'skUnknown': ''}
 
-function! s:FindStartingPosition(line, start)
+function! s:findStartingPosition(line, start) abort
   let result = a:start - 1
-  while result > 0 && a:line[result - 1] =~ '\i'
+  while result > 0 && a:line[result - 1] =~ '\k'
     let result -= 1
   endwhile
   return result + 1
 endfunction
 
-function! s:OnReply(reply) dict
-  if a:reply[0] != 'sug'
-    return
+" Get completion candidates for ident under cursor asynchronously, one-by-one.
+"
+" callback: function(startpos, complete-item) where:
+"   startpos is the starting byte of the ident to be completed.
+"   complete-item is a Dict as described in :h complete-items. Once all
+"   results are returned, the callback will be invoked with an empty Dict.
+"
+" As this function is designed to easily compose with asynchronous completion
+" frameworks, it does not return nor throw. Errors are displayed to the user
+" as messages. However, this might change in the future.
+function! nim#suggest#sug#GetCandidates(callback) abort
+  let pos = getcurpos()[1:2]
+  let startpos = s:findStartingPosition(getline('.'), pos[1])
+  let opts = {'on_data': function('s:on_data'),
+      \       'callback': function(a:callback, [startpos]),
+      \       'pos': pos}
+  call nim#suggest#utils#Query('sug', opts)
+endfunction
+
+function! s:on_data(reply) abort dict
+  if empty(a:reply)
+    call self.callback({})
+  elseif a:reply[0] == 'sug'
+    let result = {'word': split(a:reply[2], '\i\.\zs')[-1],
+        \         'menu': a:reply[3],
+        \         'info': len(a:reply[7]) > 2 ? eval(a:reply[7]) : ' ',
+        \         'icase': 1}
+    try
+      let result.kind = s:sugToCompleteType[a:reply[1]]
+    catch
+      echomsg 'suggest-sug: error: unknown symbol kind ''' . a:reply[1] . ''''
+    endtry
+    call self.callback(result)
   endif
-
-  let result = {'word': split(a:reply[2], '\i\.\zs')[-1],
-      \         'menu': a:reply[3],
-      \         'info': len(a:reply[7]) > 2 ? eval(a:reply[7]) : ' ',
-      \         'icase': 1}
-  if has_key(s:sugToCompleteType, a:reply[1])
-    let result.kind = s:sugToCompleteType[a:reply[1]]
-  endif
-  call self.callback(result, v:false)
 endfunction
 
-function! s:OnEnd() dict
-  call self.callback({}, v:true)
-endfunction
-
-function! nim#suggest#sug#GetCompletions(callback)
-  " callback(startpos, complete-item, completed) for every candidate found
-  let cursor = getcurpos()[1:2]
-  let startpos = s:FindStartingPosition(getline('.'), cursor[1])
-  let opts = {'onReply': function('s:OnReply'),
-      \       'onEnd': function('s:OnEnd'),
-      \       'callback': function(a:callback, [startpos])}
-  call nim#suggest#utils#Query(bufnr(''), cursor[0], cursor[1], 'sug', opts, v:false)
-endfunction
-
-function! nim#suggest#sug#GetAllCandidates(callback)
-  " callback(startpos, [complete-items])
+" Get all completion candidates asynchronously.
+"
+" Similar to GetCandidates(), but the callback will be invoked with a list of
+" complete-item instead.
+function! nim#suggest#sug#GetAllCandidates(callback) abort
   let items = []
-  function! Accumulator(startpos, candidate, finished) closure
-    if !a:finished
+  let scoped = {}
+  function scoped.accumulator(startpos, candidate) abort closure
+    if !empty(a:candidate)
       call add(items, a:candidate)
     else
       call a:callback(a:startpos, items)
     endif
   endfunction
-  call nim#suggest#sug#GetCompletions(function('Accumulator'))
+  call nim#suggest#sug#GetCompletions(scoped.accumulator)
 endfunction
