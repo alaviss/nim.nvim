@@ -63,5 +63,5 @@ function! nim#suggest#sug#GetAllCandidates(callback) abort
       call a:callback(a:startpos, items)
     endif
   endfunction
-  call nim#suggest#sug#GetCompletions(scoped.accumulator)
+  call nim#suggest#sug#GetCandidates(scoped.accumulator)
 endfunction
