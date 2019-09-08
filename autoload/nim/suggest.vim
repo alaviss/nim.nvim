@@ -39,8 +39,9 @@ function! s:NewInstance(project, file)
         unlet self.instance.connectQueue
       endif
     elseif a:event == 'exit'
-      echomsg 'nimsuggest instance for project: `' . self.project . "'" .
-      \       ' exited with exitcode: ' . a:data
+      if a:data != 0
+        echomsg 'nimsuggest instance for project: `' . self.project . "'" .
+        \       ' exited with exitcode: ' . a:data
       let self.instance.job = -1
       let self.instance.port = -1
       if has_key(self.instance, 'connectQueue')
