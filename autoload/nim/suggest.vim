@@ -38,7 +38,7 @@ function! s:onEvent(event, message) abort dict
   if a:event == 'error' && a:message =~ '^suggest-manager-file'
     echomsg 'nimsuggest is only available to files on disk'
     unlet s:instances[self.project()]
-  elseif a:event == 'exit' && a:message != 0
+  elseif a:event == 'exit' && a:message != 0 && has_key(s:instances, self.project())
     echomsg 'nimsuggest instance for project' self.project()
     \       'stopped with exitcode:' a:message
   endif

@@ -228,7 +228,7 @@ function! s:instanceHandler(chan, line, stream) abort dict
     call self.callback('ready', '')
     call scoped.doOneshot('ready')
     return
-  elseif a:stream == 'stderr' && self.port == 0 && a:line =~ '^Cannot open file:'
+  elseif a:stream == 'stderr' && self.port == 0 && a:line =~ '^cannot find file:'
     call self.callback('error', 'suggest-manager-file: file cannot be opened by nimsuggest')
     return
   elseif a:stream == 'exit'
