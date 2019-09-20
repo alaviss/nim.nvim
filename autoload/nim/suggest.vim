@@ -51,6 +51,7 @@ function! nim#suggest#ProjectFileStart(file)
     let s:instances[project] = nim#suggest#manager#NewInstance(s:config, a:file, function('s:onEvent'))
   catch /^suggest-manager-compat/
     echomsg 'nimsuggest version >= 0.20.0 is required for this plugin'
+    return {}
   endtry
   return s:instances[project]
 endfunction
