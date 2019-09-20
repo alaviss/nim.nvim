@@ -27,7 +27,9 @@ function! s:Methods.highlight() abort
       let self.locked = v:false
       if self.queued
         let self.queued = v:false
-        call self.highlight()
+        if updated
+          call self.highlight()
+        endif
       endif
     elseif a:reply[0] == 'highlight'
       let updated = v:true
