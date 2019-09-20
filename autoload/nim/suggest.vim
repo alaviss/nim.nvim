@@ -5,6 +5,9 @@
 " Licensed under the terms of the ISC license,
 " see the file "license.txt" included within this distribution.
 
+" NOTE: Don't depend too much on the APIs provided in this file, they are
+" subjected to future breaking changes.
+
 let s:instances = {}
 let s:config = {'nimsuggest': 'nimsuggest', 'extraArgs': []}
 
@@ -49,8 +52,8 @@ function! nim#suggest#ProjectFileStart(file)
   endif
   try
     let s:instances[project] = nim#suggest#manager#NewInstance(s:config, a:file, function('s:onEvent'))
-  catch /^suggest-manager-compat/
-    echomsg 'nimsuggest version >= 0.20.0 is required for this plugin'
+  catch
+    call nim#suggest#utils#PrintException()
     return {}
   endtry
   return s:instances[project]
@@ -79,7 +82,11 @@ function! nim#suggest#ProjectFindOrStart()
   endif
   let inst = s:instances[project]
   if !inst.isRunning()
-    call inst.start()
+    try
+      call inst.start()
+    catch
+      call nim#suggest#utils#PrintException()
+    endtry
   endif
   return inst
 endfunction

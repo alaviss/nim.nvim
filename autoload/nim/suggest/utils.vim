@@ -38,6 +38,14 @@ function! nim#suggest#utils#BufferNewline(cb) abort
   return scoped.bufCb
 endfunction
 
+" Pretty print a nim.nvim exception
+"
+" This formats and print the exceptions emitted by the plugin.
+" Useful for user-facing code.
+function! nim#suggest#utils#PrintException()
+  echomsg substitute(v:exception, '^suggest-.\{-}:\s*', 'nim.nvim: ', '')
+endfunction
+
 " Convenient wrapper for querying nimsuggest
 "
 " This wrapper abstracts away exceptions and the need to find a nimsuggest
@@ -67,7 +75,7 @@ function! nim#suggest#utils#Query(command, opts, ...)
   try
     call instance.query(a:command, a:opts, mustReady)
   catch
-    echomsg v:exception
+    call nim#suggest#utils#PrintException()
     return -1
   endtry
   return 0
