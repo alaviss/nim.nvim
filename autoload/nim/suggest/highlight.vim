@@ -5,60 +5,66 @@
 " Licensed under the terms of the ISC license,
 " see the file "license.txt" included within this distribution.
 
-function! s:OnEnd() dict
-  let data = self.hldata
-  if data.newId != -1
-    if data.srcId != -1
-      call nvim_buf_clear_highlight(self.buffer, data.srcId, 0, -1)
-    endif
-    let data.srcId = data.newId
-    let data.newId = -1
-    if data.queued
-      let data.queued = v:false
-      call s:HighlightBuffer(self.buffer, data)
-    endif
-  endif
-endfunction
+let s:Methods = {}
 
-function! s:OnReply(reply) dict
-  if a:reply[0] != "highlight"
+function! s:Methods.highlight() abort
+  if self.locked
+    let self.queued = v:true
     return
   endif
-  " replace sk prefix with ours
-  let group = "nimSug" . a:reply[1][2:]
-  let line = str2nr(a:reply[2] - 1)
-  let col = str2nr(a:reply[3])
-  let count = str2nr(a:reply[4])
-  call nvim_buf_add_highlight(self.buffer, self.hldata.newId, group,
-       \                      line, col, col + count)
+  let self.locked = v:true
+  let updated = v:false
+  function! self.on_data(reply) abort closure
+    if empty(a:reply)
+      if updated
+        if exists('*nvim_buf_clear_namespace')
+          call nvim_buf_clear_namespace(self.buffer, self.ids[0], 0, -1)
+        else
+          call nvim_buf_clear_highlight(self.buffer, self.ids[0], 0, -1)
+        endif
+        call reverse(self.ids)
+      endif
+      let self.locked = v:false
+      if self.queued
+        let self.queued = v:false
+        if updated
+          call self.highlight()
+        endif
+      endif
+    elseif a:reply[0] == 'highlight'
+      let updated = v:true
+      " replace sk prefix with ours
+      let group = "nimSug" . a:reply[1][2:]
+      let line = str2nr(a:reply[2]) - 1
+      let col = str2nr(a:reply[3])
+      let count = str2nr(a:reply[4])
+      call nvim_buf_add_highlight(self.buffer, self.ids[1], group, line, col, col + count)
+    endif
+  endfunction
+  call nim#suggest#utils#Query('highlight', self)
 endfunction
 
-function! s:HighlightBuffer(buffer, hldata) abort
-  if a:hldata.newId != -1
-    " another highlight instance in-progress
-    let a:hldata.queued = v:true
-    return
-  endif
-  let a:hldata.newId = nvim_buf_add_highlight(a:buffer, 0, '', 0, 0, 0)
-  let opts = {'onReply': function('s:OnReply'),
-      \       'onEnd': function('s:OnEnd'),
-      \       'buffer': a:buffer,
-      \       'hldata': a:hldata}
-  call nim#suggest#utils#Query(a:buffer, -1, -1, 'highlight', opts, v:true)
-endfunction
-
+" Semantically highlight the current buffer.
+"
+" This is an user-facing function, thus it does not return nor throw. Errors
+" will be displayed as messages.
 function! nim#suggest#highlight#HighlightBuffer()
-  call nim#suggest#highlight#InitBuffer()
-  call s:HighlightBuffer(bufnr(''), b:nimSugHighlight)
-endfunction
-
-function! nim#suggest#highlight#InitBuffer()
-  if exists('b:nimSugHighlight')
-    return
+  if !exists('b:nimSugHighlight')
+    let b:nimSugHighlight = {
+        \ 'buffer': bufnr(''),
+        \ 'locked': v:false,
+        \ 'queued': v:false
+        \}
+    let buf = bufnr('')
+    if exists('*nvim_create_namespace')
+      let b:nimSugHighlight['ids'] = [nvim_create_namespace('nim.nvim#1'),
+          \                           nvim_create_namespace('nim.nvim#2')]
+    else
+      let b:nimSugHighlight['ids'] = [nvim_buf_add_highlight(buf, 0, '', 0, 0, 0),
+          \                           nvim_buf_add_highlight(buf, 0, '', 0, 0, 0)]
+    endif
+    call extend(b:nimSugHighlight, s:Methods)
   endif
-  let b:nimSugHighlight = {
-      \ 'srcId': -1,
-      \ 'newId': -1,
-      \ 'queued': v:false
-      \ }
+
+  call b:nimSugHighlight.highlight()
 endfunction
