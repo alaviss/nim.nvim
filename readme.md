@@ -45,6 +45,17 @@ au User asyncomplete_setup call asyncomplete#register_source({
     \ })
 ```
 
+##### Support for different completion plugins
+
+While [`prabirshrestha/asyncomplete.vim`][0] is the most tested plugin for use
+with `nim.nvim`, it's worth noting that this plugin was made to support a wide
+range of completion plugins.
+
+If your favorite completion plugin supports asynchronous completion sources in
+vimscript, the functions in `autoload/nim/suggest/sug.vim` can be used to
+integrate nim.nvim with it. Details on how to do so differs between plugins, so
+please refer to your completion plugin's documentations.
+
 #### Usage
 
 See the project's [wiki][1] for more information.
