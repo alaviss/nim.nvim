@@ -37,7 +37,7 @@ endif
 compiler nim
 
 " section movement
-if !exists('g:no_plugin_maps') && !exists('g:no_nim_maps')
+if !exists('no_plugin_maps') && !exists('no_nim_maps')
   noremap <script> <buffer> <silent> [[ :<C-U>call <SID>nimNextSection(2, v:true, v:false)<lf>
   noremap <script> <buffer> <silent> ]] :<C-U>call <SID>nimNextSection(2, v:false, v:false)<lf>
 
@@ -105,7 +105,7 @@ noremap <script> <buffer> <silent> <Plug>NimOutline :call nim#suggest#outline#Op
 noremap <script> <buffer> <silent> <Plug>NimStar :execute <SID>nimStar(v:true)<lf>
 noremap <script> <buffer> <silent> <Plug>NimGStar :execute <SID>nimStar(v:false)<lf>
 
-if !exists('no_plugin_maps') && !exists('g:no_nim_maps')
+if !exists('no_plugin_maps') && !exists('no_nim_maps')
   if !hasmapto('<Plug>NimGoToDefBuf')
     nmap <buffer> gd <Plug>NimGoToDefBuf
   endif
