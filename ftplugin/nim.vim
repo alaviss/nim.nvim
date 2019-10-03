@@ -106,9 +106,9 @@ noremap <script> <buffer> <silent> <Plug>NimStar :execute <SID>nimStar(v:true)<l
 noremap <script> <buffer> <silent> <Plug>NimGStar :execute <SID>nimStar(v:false)<lf>
 
 if !exists('no_plugin_maps') && !exists('g:no_nim_maps')
-  nmap gd <Plug>NimGoToDefBuf
-  nmap gD <Plug>NimGoToDefSplit
-  nmap gO <Plug>NimOutline
-  nmap * <Plug>NimStar
-  nmap g* <Plug>NimGStar
+  nmap <buffer> gd <Plug>NimGoToDefBuf
+  nmap <buffer> gD <Plug>NimGoToDefSplit
+  nmap <buffer> gO <Plug>NimOutline
+  nmap <buffer> * <Plug>NimStar
+  nmap <buffer> g* <Plug>NimGStar
 endif
