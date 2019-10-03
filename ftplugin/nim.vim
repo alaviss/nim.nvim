@@ -94,7 +94,7 @@ endfunction
 
 " commands
 " find references to symbol on cursor
-command! NimReferences call nim#suggest#use#ShowReferences()
+command! -buffer NimReferences call nim#suggest#use#ShowReferences()
 
 " scripted mappings
 noremap <script> <buffer> <silent> <Plug>NimGoToDefBuf :call nim#suggest#def#GoTo('b')<lf>
