@@ -195,6 +195,7 @@ function! s:SuggestInstance.query(command, opts, ...) abort
   endfunction
   function scoped.on_data(chan, line, stream) abort closure
     if empty(a:line)
+      call chanclose(a:chan)
       call scoped.cleanup()
       call Cb([])
     else
