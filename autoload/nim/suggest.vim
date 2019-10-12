@@ -51,12 +51,13 @@ function! nim#suggest#ProjectFileStart(file)
     return s:instances[project]
   endif
   try
-    let s:instances[project] = nim#suggest#manager#NewInstance(s:config, a:file, function('s:onEvent'))
+    let instance = nim#suggest#manager#NewInstance(s:config, a:file, function('s:onEvent'), v:true)
+    let s:instances[instance.project()] = instance
   catch
     call nim#suggest#utils#PrintException()
     return {}
   endtry
-  return s:instances[project]
+  return instance
 endfunction
 
 function! nim#suggest#ProjectStart()

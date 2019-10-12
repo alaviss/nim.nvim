@@ -240,6 +240,56 @@ function! s:instanceHandler(chan, line, stream) abort dict
   call self.callback(a:stream, a:line)
 endfunction
 
+function! s:findProjectMain(path) abort
+  let current = a:path
+  let prev = current
+  let pkg = fnamemodify(a:path, ':t')
+  let candidates = []
+
+  let nimblepkg = ''
+  while v:true
+    " arcane magic to make sure that the path seperator appear at the end
+    let esccur = fnameescape(fnamemodify(current, ':p'))
+    let escprv = fnameescape(fnamemodify(prev, ':p'))
+    let configs = []
+    for ext in ['*.nims', '*.cfg', '*.nimcfg', '*.nimble']
+      call extend(configs, glob(esccur . ext, v:true, v:true))
+    endfor
+
+    for f in configs
+      if f == 'config.nims'
+        continue
+      elseif fnamemodify(f, ':e') == 'nimble'
+        if empty(nimblepkg)
+          let nimblepkg = fnamemodify(f, ':t:r')
+        else
+          " more than one nimble file found, don't trust the result
+          return ''
+        endif
+      endif
+      let candidate = fnameescape(fnamemodify(f, ':t:r') . '.nim')
+      for i in current != a:path && !empty(nimblepkg) ? [esccur, escprv] : [esccur]
+        call extend(candidates, glob(i . candidate, v:true, v:true))
+      endfor
+    endfor
+
+    for f in candidates
+      let fname = fnamemodify(f, ':t')
+      if stridx(fname, !empty(nimblepkg) ? nimblepkg : pkg) != -1
+        return f
+      endif
+    endfor
+    if !empty(candidates)
+      return candidates[0]
+    endif
+    let prev = current
+    let current = fnamemodify(current, ':h')
+    if prev == current
+      return ''
+    endif
+  endwhile
+endfunction
+
 " Creates a new nimsuggest instance
 " config: NimsuggestConfig
 " file: /path/to/file, can be relative to the cwd, must be available on disk
@@ -254,12 +304,16 @@ endfunction
 "            'stderr'    nimsuggest to stdout/stderr (note: processed lines
 "                        will not be relayed)
 "   event == 'exit'   => message will be the exit code of nimsuggest
+" autofind: bool = false: attempt to find the main module of the project
 "
 " See the result variable below for the returned Dict. It's not advised to
 " edit the dict without using the functions in this file.
-function! nim#suggest#manager#NewInstance(config, file, callback) abort
+function! nim#suggest#manager#NewInstance(config, file, callback, ...) abort
+  let autofind = a:0 >= 1 ? a:1 : v:false
   let help = system([a:config.nimsuggest, '--help'])
-  if help !~ '--autobind'
+  if v:shell_error == -1
+    throw 'suggest-manager-exec: nimsuggest (' . self.cmd . ') cannot be executed'
+  elseif help !~ '--autobind'
     throw 'suggest-manager-compat: only nimsuggest >= 0.20.0 is supported'
   endif
 
@@ -274,6 +328,12 @@ function! nim#suggest#manager#NewInstance(config, file, callback) abort
       \         'callback': a:callback,
       \         'oneshots': []}
   call extend(result, s:SuggestInstance)
+  if autofind
+    let projectFile = s:findProjectMain(result.project())
+    if !empty(projectFile)
+      let result.file = projectFile
+    endif
+  endif
 
   call result.start()
   return result
