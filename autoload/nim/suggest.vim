@@ -16,8 +16,8 @@ function! s:findProjectInstance(dir)
     return ''
   endif
   let result = ''
-  let matchingRegex = '\V\^' . escape(a:dir, '\')
   for key in keys(s:instances)
+    let matchingRegex = '\V\^' . escape(key, '\')
     if a:dir =~ matchingRegex && strlen(key) > strlen(result)
       let result = key
     endif
