@@ -131,6 +131,12 @@ function! s:SuggestInstance.project() abort dict
   return fnamemodify(self.file, ':h')
 endfunction
 
+" Given a path, check if it's covered by the current nimsuggest instance
+function! s:SuggestInstance.contains(path) abort
+  let path = isdirectory(a:path) ? fnamemodify(a:path, ':p') : fnamemodify(a:path, ':p:h')
+  return path =~ '\V\^' . escape(self.project(), '\')
+endfunction
+
 " Send a query to the instance.
 "
 " command: A command string for nimsuggest (ie. 'highlight', 'sug', 'def', etc.)

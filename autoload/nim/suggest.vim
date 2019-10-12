@@ -16,10 +16,9 @@ function! s:findProjectInstance(dir)
     return ''
   endif
   let result = ''
-  for key in keys(s:instances)
-    let matchingRegex = '\V\^' . escape(key, '\')
-    if a:dir =~ matchingRegex && strlen(key) > strlen(result)
-      let result = key
+  for [proj, inst] in items(s:instances)
+    if inst.contains(a:dir) && strlen(proj) > strlen(result)
+      let result = proj
     endif
   endfor
   return result
