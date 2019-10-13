@@ -99,7 +99,7 @@ function! s:SuggestInstance.message(data, opts, ...) abort dict
 
   if !self.isReady()
     if !mustReady
-      call self.await(scoped.onReady)
+      call self.addCallback(scoped.onReady)
     elseif !self.isRunning()
       throw 'suggest-manager-running: instance is not running'
     else
@@ -116,7 +116,7 @@ endfunction
 " callback: function(event)
 "   event => 'ready': Instance is ready
 "   event => 'exit': Instance didn't finish initializing and exited
-function! s:SuggestInstance.await(callback) abort dict
+function! s:SuggestInstance.addCallback(callback) abort dict
   if !self.isRunning()
     throw 'suggest-manager-running: instance is not running'
   elseif self.isReady()
