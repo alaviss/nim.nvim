@@ -59,11 +59,17 @@ endfunction
 
 " Messages the instance asynchronously.
 "
+" This function is a convenience wrapper around the editor's tcp messaging
+" functions that connect to and send the specified message to the instance. It
+" does not attempt to provide an abstraction layer over the editor's
+" facilities, so mandatory arguments will be interpreted differently
+" between editors.
+"
 " It might take a while for the instance to become ready. If immediate result
 " is wanted, pass v:true as the third argument.
 "
-" data: See ':h chansend'
-" opts: See ':h sockconnect'
+" data: See ':h chansend' on neovim
+" opts: See ':h sockconnect' on neovim
 " mustReady (optional): Throw if instance is not ready
 "
 " If the instance died before message can be sent, `on_data` will be called with
