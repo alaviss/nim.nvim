@@ -166,17 +166,18 @@ function! s:SuggestInstance.query(command, opts, ...) abort
     let a:opts['buffer'] = bufnr('')
   endif
 
+  let invalidChars = '"\|\n\|\r'
   let filename = bufname(a:opts.buffer)
-  if filename =~ '"'
-    throw 'suggest-manager-file: unsupported character (") in path to file'
+  if filename =~ invalidChars
+    throw 'suggest-manager-file: unsupported character in path to file'
   endif
   let dirtyFile = ''
   let fileQuery = '"' . filename . '"'
   if getbufvar(a:opts.buffer, '&modified')
     let dirtyFile = tempname()
     " shouldn't happen, but doesn't hurt to check
-    if dirtyFile =~ '"'
-      throw 'suggest-manager-file-internal: unsupported character (") in path to dirty file'
+    if dirtyFile =~ invalidChars
+      throw 'suggest-manager-file-internal: unsupported character in path to dirty file'
     endif
     let fileQuery .= ';' . dirtyFile
     call writefile(getbufline(a:opts.buffer, 1, '$'), dirtyFile, 'S')
