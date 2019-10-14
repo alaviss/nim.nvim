@@ -10,6 +10,7 @@
 "   'extraArgs': [] (a list of extra arguments for nimsuggest, will be passed
 "                    after the default arguments ['--autobind',
 "                    '--address:localhost'])
+"   'autofind': v:true (attempt to find the actual project file)
 " }
 "
 " exception 'suggest-manager-':
@@ -309,12 +310,10 @@ endfunction
 "            'stderr'    nimsuggest to stdout/stderr (note: processed lines
 "                        will not be relayed)
 "   event == 'exit'   => message will be the exit code of nimsuggest
-" autofind: bool = false: attempt to find the main module of the project
 "
 " See the result variable below for the returned Dict. It's not advised to
 " edit the dict without using the functions in this file.
-function! nim#suggest#manager#NewInstance(config, file, callback, ...) abort
-  let autofind = a:0 >= 1 ? a:1 : v:false
+function! nim#suggest#manager#NewInstance(config, file, callback) abort
   let help = system([a:config.nimsuggest, '--help'])
   if v:shell_error == -1
     throw 'suggest-manager-exec: nimsuggest (' . self.cmd . ') cannot be executed'
@@ -333,7 +332,7 @@ function! nim#suggest#manager#NewInstance(config, file, callback, ...) abort
       \         'cb': a:callback,
       \         'oneshots': []}
   call extend(result, s:SuggestInstance)
-  if autofind
+  if !has_key(a:config, 'autofind') || a:config.autofind
     let projectFile = s:findProjectMain(result.project())
     if !empty(projectFile)
       let result.file = projectFile
