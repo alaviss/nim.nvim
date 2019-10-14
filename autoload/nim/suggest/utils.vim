@@ -74,7 +74,7 @@ function! nim#suggest#utils#Query(command, opts, ...)
 
   try
     call instance.query(a:command, a:opts, mustReady)
-  catch
+  catch /^suggest-/
     call nim#suggest#utils#PrintException()
     return -1
   endtry

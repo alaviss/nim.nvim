@@ -52,7 +52,7 @@ function! nim#suggest#ProjectFileStart(file)
   try
     let instance = nim#suggest#manager#NewInstance(s:config, a:file, function('s:onEvent'))
     let s:instances[instance.project()] = instance
-  catch
+  catch /^suggest-/
     call nim#suggest#utils#PrintException()
     return {}
   endtry
@@ -84,7 +84,7 @@ function! nim#suggest#ProjectFindOrStart()
   if !inst.isRunning()
     try
       call inst.start()
-    catch
+    catch /^suggest-/
       call nim#suggest#utils#PrintException()
     endtry
   endif
