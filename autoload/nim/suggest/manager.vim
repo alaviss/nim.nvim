@@ -231,18 +231,18 @@ function! s:instanceHandler(chan, line, stream) abort dict
 
   if a:stream == 'stdout' && self.port == 0
     let self.port = str2nr(a:line)
-    call self.callback('ready', '')
+    call self.cb('ready', '')
     call scoped.doOneshot('ready')
     return
   elseif a:stream == 'stderr' && self.port == 0 && a:line =~ '^cannot find file:'
-    call self.callback('error', 'suggest-manager-file: file cannot be opened by nimsuggest')
+    call self.cb('error', 'suggest-manager-file: file cannot be opened by nimsuggest')
     return
   elseif a:stream == 'exit'
     let self.job = 0
     let self.port = 0
     call scoped.doOneshot('exit')
   endif
-  call self.callback(a:stream, a:line)
+  call self.cb(a:stream, a:line)
 endfunction
 
 function! s:findProjectMain(path) abort
@@ -330,7 +330,7 @@ function! nim#suggest#manager#NewInstance(config, file, callback, ...) abort
       \         'on_stdout': nim#suggest#utils#BufferNewline(function('s:instanceHandler')),
       \         'on_stderr': nim#suggest#utils#BufferNewline(function('s:instanceHandler')),
       \         'on_exit': nim#suggest#utils#BufferNewline(function('s:instanceHandler')),
-      \         'callback': a:callback,
+      \         'cb': a:callback,
       \         'oneshots': []}
   call extend(result, s:SuggestInstance)
   if autofind
