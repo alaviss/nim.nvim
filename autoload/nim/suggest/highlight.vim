@@ -7,40 +7,41 @@
 
 let s:Methods = {}
 
-function! s:Methods.highlight() abort
+function s:Methods.on_data(reply) abort
+  if empty(a:reply)
+    if self.updated
+      if exists('*nvim_buf_clear_namespace')
+        call nvim_buf_clear_namespace(self.buffer, self.ids[0], 0, -1)
+      else
+        call nvim_buf_clear_highlight(self.buffer, self.ids[0], 0, -1)
+      endif
+      call reverse(self.ids)
+    endif
+    let self.locked = v:false
+    if self.queued
+      let self.queued = v:false
+      if self.updated
+        call self.highlight()
+      endif
+    endif
+  elseif a:reply[0] == 'highlight'
+    let self.updated = v:true
+    " replace sk prefix with ours
+    let group = "nimSug" . a:reply[1][2:]
+    let line = str2nr(a:reply[2]) - 1
+    let col = str2nr(a:reply[3])
+    let count = str2nr(a:reply[4])
+    call nvim_buf_add_highlight(self.buffer, self.ids[1], group, line, col, col + count)
+  endif
+endfunction
+
+function s:Methods.highlight() abort
   if self.locked
     let self.queued = v:true
     return
   endif
   let self.locked = v:true
-  let updated = v:false
-  function! self.on_data(reply) abort closure
-    if empty(a:reply)
-      if updated
-        if exists('*nvim_buf_clear_namespace')
-          call nvim_buf_clear_namespace(self.buffer, self.ids[0], 0, -1)
-        else
-          call nvim_buf_clear_highlight(self.buffer, self.ids[0], 0, -1)
-        endif
-        call reverse(self.ids)
-      endif
-      let self.locked = v:false
-      if self.queued
-        let self.queued = v:false
-        if updated
-          call self.highlight()
-        endif
-      endif
-    elseif a:reply[0] == 'highlight'
-      let updated = v:true
-      " replace sk prefix with ours
-      let group = "nimSug" . a:reply[1][2:]
-      let line = str2nr(a:reply[2]) - 1
-      let col = str2nr(a:reply[3])
-      let count = str2nr(a:reply[4])
-      call nvim_buf_add_highlight(self.buffer, self.ids[1], group, line, col, col + count)
-    endif
-  endfunction
+  let self.updated = v:false
   call nim#suggest#utils#Query('highlight', self)
 endfunction
 
@@ -53,7 +54,8 @@ function! nim#suggest#highlight#HighlightBuffer()
     let b:nimSugHighlight = {
         \ 'buffer': bufnr(''),
         \ 'locked': v:false,
-        \ 'queued': v:false
+        \ 'queued': v:false,
+        \ 'updated': v:false
         \}
     let buf = bufnr('')
     if exists('*nvim_create_namespace')
