@@ -198,12 +198,12 @@ function! s:SuggestInstance.query(command, opts, ...) abort
     if !empty(dirtyFile)
       call delete(dirtyFile)
     endif
+    call a:opts.on_data([])
   endfunction
   function opts.on_data(chan, line, stream) abort closure
     if empty(a:line)
       call chanclose(a:chan)
       call self.cleanup()
-      call a:opts.on_data([])
     else
       call a:opts.on_data(split(trim(a:line), '\t', v:true))
     endif
