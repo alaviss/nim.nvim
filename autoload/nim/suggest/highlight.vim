@@ -57,13 +57,16 @@ function! nim#suggest#highlight#HighlightBuffer()
         \ 'queued': v:false,
         \ 'updated': v:false
         \}
-    let buf = bufnr('')
     if exists('*nvim_create_namespace')
-      let b:nimSugHighlight['ids'] = [nvim_create_namespace('nim.nvim#1'),
-          \                           nvim_create_namespace('nim.nvim#2')]
+      let b:nimSugHighlight['ids'] = [
+          \  nvim_create_namespace('nim.nvim#1'),
+          \  nvim_create_namespace('nim.nvim#2')
+          \]
     else
-      let b:nimSugHighlight['ids'] = [nvim_buf_add_highlight(buf, 0, '', 0, 0, 0),
-          \                           nvim_buf_add_highlight(buf, 0, '', 0, 0, 0)]
+      let b:nimSugHighlight['ids'] = [
+          \  nvim_buf_add_highlight(b:nimSugHighlight.buffer, 0, '', 0, 0, 0),
+          \  nvim_buf_add_highlight(b:nimSugHighlight.buffer, 0, '', 0, 0, 0)
+          \]
     endif
     call extend(b:nimSugHighlight, s:Methods)
   endif
