@@ -41,14 +41,14 @@ syntax region nimString
       \ contains=nimEscapeStr,nimEscapeChar,@Spell
       \ oneline
 syntax region nimString
-      \ start=+"""+ end=+"""+
+      \ start=+"""+ end=+"*"""+
       \ contains=nimEscapeStr,nimEscapeChar,@Spell
 syntax region nimRawString
       \ start=+\<r"+ end=+"+
       \ contains=@Spell
       \ oneline
 syntax region nimRawString
-      \ start=+\<r"""+ end=+"""+
+      \ start=+\<r"""+ end=+"*"""+
       \ contains=@Spell
 syntax match nimString +"""""""""+
 syntax match nimRawString +\<r"""""""""+
