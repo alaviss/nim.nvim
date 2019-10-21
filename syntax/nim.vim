@@ -39,12 +39,14 @@ syntax keyword nimTodo       FIXME NOTE NOTES TODO XXX contained
 syntax region nimString
       \ start=+"+ skip=+\\"+ end=+"+
       \ contains=nimEscapeStr,nimEscapeChar,@Spell
+      \ oneline
 syntax region nimString
       \ start=+"""+ end=+"""+
       \ contains=nimEscapeStr,nimEscapeChar,@Spell
 syntax region nimRawString
       \ start=+\<r"+ end=+"+
       \ contains=@Spell
+      \ oneline
 syntax region nimRawString
       \ start=+\<r"""+ end=+"""+
       \ contains=@Spell
