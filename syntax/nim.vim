@@ -41,17 +41,15 @@ syntax region nimString
       \ contains=nimEscapeStr,nimEscapeChar,nimEscapeQuote,@Spell
       \ oneline
 syntax region nimString
-      \ start=+"""+ end=+"*"""+
+      \ start=+"""+ end=+.*\zs"""+
       \ contains=nimEscapeStr,nimEscapeChar,@Spell
 syntax region nimRawString
       \ start='\k\+"' end='"'
       \ contains=@Spell
       \ oneline
 syntax region nimRawString
-      \ start='\k\+"""' end='"*"""'
+      \ start='\k\+"""' end='.*\zs"""'
       \ contains=@Spell
-syntax match nimString +"""""""""+
-syntax match nimRawString '\k\+"""""""""'
 syntax match nimCharacter +'\%(\\\%([rcnlftv\\"'abe]\|x\x\{2}\|\d\+\)\|.\)'+ contains=nimEscapeChar,nimEscapeQuote
 
 syntax match nimEscapeChar  +\\[rcnlftv\\'abe]+ contained
