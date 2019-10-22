@@ -38,7 +38,7 @@ syntax keyword nimTodo       FIXME NOTE NOTES TODO XXX contained
 
 syntax region nimString
       \ start=+"+ skip=+\\"+ end=+"+
-      \ contains=nimEscapeStr,nimEscapeChar,@Spell
+      \ contains=nimEscapeStr,nimEscapeChar,nimEscapeQuote,@Spell
       \ oneline
 syntax region nimString
       \ start=+"""+ end=+"*"""+
@@ -52,13 +52,14 @@ syntax region nimRawString
       \ contains=@Spell
 syntax match nimString +"""""""""+
 syntax match nimRawString +\<r"""""""""+
-syntax match nimCharacter +'\%(\\\%([rcnlftv\\"'abe]\|x\x\{2}\|\d\+\)\|.\)'+ contains=nimEscapeChar
+syntax match nimCharacter +'\%(\\\%([rcnlftv\\"'abe]\|x\x\{2}\|\d\+\)\|.\)'+ contains=nimEscapeChar,nimEscapeQuote
 
-syntax match nimEscapeChar +\\[rcnlftv\\"'abe]+ contained
-syntax match nimEscapeChar "\\\d\+" contained
-syntax match nimEscapeChar "\\\x\x\{2}" contained
-syntax match nimEscapeStr  "\\p" contained
-syntax match nimEscapeStr  "\\u\%(\x\{4}\|{\x\+}\)" contained
+syntax match nimEscapeChar  +\\[rcnlftv\\'abe]+ contained
+syntax match nimEscapeChar  "\\\d\+" contained
+syntax match nimEscapeChar  "\\\x\x\{2}" contained
+syntax match nimEscapeQuote +\\"+ contained
+syntax match nimEscapeStr   "\\p" contained
+syntax match nimEscapeStr   "\\u\%(\x\{4}\|{\x\+}\)" contained
 
 syntax match nimNumber display "\<\d\+\%(_\d\+\)*\%('\=[iIuU]\%(8\|16\|32\|64\)\)\=\>"
 syntax match nimNumber display "\<0[xX]\x\+\%(_\x\+\)*\%('\=[iIuU]\%(8\|16\|32\|64\)\)\=\>"
@@ -118,6 +119,7 @@ highlight default link nimLongComment     Comment
 highlight default link nimString          String
 highlight default link nimEscapeStr       SpecialChar
 highlight default link nimEscapeChar      SpecialChar
+highlight default link nimEscapeQuote     SpecialChar
 highlight default link nimRawString       String
 highlight default link nimCharacter       Character
 highlight default link nimNumber          Number
