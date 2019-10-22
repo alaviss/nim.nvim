@@ -37,17 +37,21 @@ syntax region nimLongComment start="##\[" end="]##" contains=nimTodo,@Spell
 syntax keyword nimTodo       FIXME NOTE NOTES TODO XXX contained
 
 syntax region nimString
+      \ matchgroup=nimQuote
       \ start=+"+ skip=+\\"+ end=+"+
       \ contains=nimEscapeStr,nimEscapeChar,nimEscapeQuote,@Spell
       \ oneline
 syntax region nimString
+      \ matchgroup=nimTripleQuote
       \ start=+"""+ end=+.*\zs"""+
       \ contains=nimEscapeStr,nimEscapeChar,@Spell
 syntax region nimRawString
+      \ matchgroup=nimQuote
       \ start='\k\+"' end='"'
       \ contains=@Spell
       \ oneline
 syntax region nimRawString
+      \ matchgroup=nimTripleQuote
       \ start='\k\+"""' end='.*\zs"""'
       \ contains=@Spell
 syntax match nimCharacter +'\%(\\\%([rcnlftv\\"'abe]\|x\x\{2}\|\d\+\)\|.\)'+ contains=nimEscapeChar,nimEscapeQuote
@@ -119,6 +123,8 @@ highlight default link nimEscapeStr       SpecialChar
 highlight default link nimEscapeChar      SpecialChar
 highlight default link nimEscapeQuote     SpecialChar
 highlight default link nimRawString       String
+highlight default link nimQuote           String
+highlight default link nimTripleQuote     nimQuote
 highlight default link nimCharacter       Character
 highlight default link nimNumber          Number
 highlight default link nimFloat           Float
