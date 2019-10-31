@@ -129,8 +129,12 @@ function GetNimIndent(lnum)
       " proc test(a,
       "           b) {.pragma.} =
       "   ^
-      if prevParen != [0, 0] && (prevNonEmptyLine[prevParen[1] - 1] == '{' &&
-      \                          prevNonEmptyLine[prevParen[1]] == '.')
+      " proc test(a,
+      "           b): seq[int] =
+      "   ^
+      if prevParen != [0, 0] &&
+      \  prevNonEmptyLine[prevParen[1] - 1:prevParen[1]] == '{.' ||
+      \  prevNonEmptyLine[prevParen[1] - 1] == '['
         call cursor(prevParen[0], prevParen[1])
         let nonPragPrevParen = s:lookupBaseParen(prevNonEmpty, s:ParenStart, s:ParenStop, v:true, v:false)
         if nonPragPrevParen != [0, 0]
