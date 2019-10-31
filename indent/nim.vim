@@ -132,13 +132,28 @@ function GetNimIndent(lnum)
       " proc test(a,
       "           b): seq[int] =
       "   ^
-      if prevParen != [0, 0] &&
-      \  prevNonEmptyLine[prevParen[1] - 1:prevParen[1]] == '{.' ||
-      \  prevNonEmptyLine[prevParen[1] - 1] == '['
-        call cursor(prevParen[0], prevParen[1])
-        let nonPragPrevParen = s:lookupBaseParen(prevNonEmpty, s:ParenStart, s:ParenStop, v:true, v:false)
-        if nonPragPrevParen != [0, 0]
-          let prevIndent = indent(nonPragPrevParen[0])
+      " proc test(a,
+      "           b)
+      "          {.pragma.} =
+      "   ^
+      if prevParen != [0, 0]
+        if prevNonEmptyLine[prevParen[1] - 1:prevParen[1]] == '{.' ||
+        \  prevNonEmptyLine[prevParen[1] - 1] == '['
+          call cursor(prevParen[0], prevParen[1])
+          let nonPragPrevParen = s:lookupBaseParen(prevNonEmpty, s:ParenStart, s:ParenStop, v:true, v:false)
+          if nonPragPrevParen != [0, 0]
+            let prevIndent = indent(nonPragPrevParen[0])
+          elseif prevNonEmptyLine =~ '=\s*$' &&
+          \      prevNonEmptyLine[prevParen[1] - 1:prevParen[1]] == '{.'
+            let nonPragPrev = s:prevNonEmptyNorComments(prevParen[0] - 1)
+            let nonPragPrevLine = s:getLineNoComments(nonPragPrev)
+            if nonPragPrevLine =~ ')\s*$'
+              let nonPragPrevParen = s:lookupBaseParen(nonPragPrev, '(', ')')
+              if nonPragPrevParen != [0, 0]
+                let prevIndent = indent(nonPragPrevParen[0])
+              endif
+            endif
+          endif
         endif
       endif
       return prevIndent + shiftwidth()
