@@ -220,7 +220,7 @@ function GetNimIndent(lnum)
     " proc p(a,
     "        b)
     "       {.noSideEffects.} <-- aligned with the proc open params
-    if curLine =~ '^\s*{\.'
+    if curLine =~ '^\s*{\.' && prevParen != [0, 0]
       let parenLine = s:getLineNoComments(prevParen[0])
       if parenLine[prevParen[1] - 1] == '('
         let result = prevParen[1] - 1
