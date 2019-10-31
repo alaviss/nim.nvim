@@ -9,7 +9,7 @@ let b:did_indent = v:true
 
 setlocal autoindent
 setlocal indentexpr=GetNimIndent(v:lnum)
-setlocal indentkeys=!^F,o,O,<:>,),],},=el,=of
+setlocal indentkeys=!^F,o,O,<:>,{,),],},=el,=of
 
 if exists("*GetNimIndent")
     finish
@@ -198,6 +198,18 @@ function GetNimIndent(lnum)
         return curParenIndent < curIndent ? curParenIndent : -1
       else
         return -1
+      endif
+    endif
+
+    " Special indent for pragma after proc params
+    " proc p(a,
+    "        b)
+    "       {.noSideEffects.} <-- aligned with the proc open params
+    if curLine =~ '^\s*{\.'
+      let parenLine = s:getLineNoComments(prevParen[0])
+      if parenLine[prevParen[1] - 1] == '('
+        let result = prevParen[1] - 1
+        return result < curIndent ? result : curIndent
       endif
     endif
 

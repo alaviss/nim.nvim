@@ -4,5 +4,5 @@ proc longProc(a: int,
 
 proc longProc(a: int,
               b: string)
-             {.noSideEffects.} = #! 7 disabled
+             {.noSideEffects.} = #! 13
   #! 2 disabled
