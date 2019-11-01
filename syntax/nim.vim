@@ -43,7 +43,7 @@ syntax region nimString
       \ oneline
 syntax region nimString
       \ matchgroup=nimTripleQuote
-      \ start=+"""+ end=+.*\zs"""+
+      \ start=+"""+ end=+"*\zs"""+
       \ contains=nimEscapeStr,nimEscapeChar,@Spell
 syntax region nimRawString
       \ matchgroup=nimQuote
@@ -52,7 +52,7 @@ syntax region nimRawString
       \ oneline
 syntax region nimRawString
       \ matchgroup=nimTripleQuote
-      \ start='\k\+"""' end='.*\zs"""'
+      \ start='\k\+"""' end='"*\zs"""'
       \ contains=@Spell
 syntax match nimCharacter +'\%(\\\%([rcnlftv\\"'abe]\|x\x\{2}\|\d\+\)\|.\)'+ contains=nimEscapeChar,nimEscapeQuote
 
