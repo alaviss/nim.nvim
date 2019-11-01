@@ -39,7 +39,8 @@ function! s:on_data(reply) abort dict
     let result = {'word': split(a:reply[2], '\i\.\zs')[-1],
         \         'menu': a:reply[3],
         \         'info': len(a:reply[7]) > 2 ? eval(a:reply[7]) : ' ',
-        \         'icase': 1}
+        \         'icase': 1,
+        \         'dup': 1}
     try
       let result.kind = s:sugToCompleteType[a:reply[1]]
     catch
