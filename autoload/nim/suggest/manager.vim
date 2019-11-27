@@ -316,7 +316,7 @@ endfunction
 function! nim#suggest#manager#NewInstance(config, file, callback) abort
   let help = system([a:config.nimsuggest, '--help'])
   if v:shell_error == -1
-    throw 'suggest-manager-exec: nimsuggest (' . self.cmd . ') cannot be executed'
+    throw 'suggest-manager-exec: nimsuggest (' . a:config.nimsuggest . ') cannot be executed'
   elseif help !~ '--autobind'
     throw 'suggest-manager-compat: only nimsuggest >= 0.20.0 is supported'
   endif
