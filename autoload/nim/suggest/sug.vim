@@ -3,7 +3,7 @@ let s:sugToCompleteType = {'skProc': 'f', 'skFunc': 'f', 'skMethod': 'f',
     \                      'skConst': 'd', 'skResult': 'v', 'skIterator': 'f',
     \                      'skConverter': 'd', 'skMacro': 'd', 'skTemplate': 'd',
     \                      'skField': 'm', 'skEnumField': 'm', 'skForVar': 'v',
-    \                      'skUnknown': ''}
+    \                      'skUnknown': '', 'skParam': 'v'}
 
 function! s:findStartingPosition(line, start) abort
   let result = a:start - 1
