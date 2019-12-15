@@ -95,6 +95,8 @@ endfunction
 " commands
 " find references to symbol on cursor
 command! -buffer NimReferences call nim#suggest#use#ShowReferences()
+" display the type of symbol on cursor
+command! -buffer NimTypeOf call nim#suggest#def#ShowType()
 
 " scripted mappings
 noremap <script> <buffer> <silent> <Plug>NimGoToDefBuf :call nim#suggest#def#GoTo('b')<lf>
