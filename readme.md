@@ -27,6 +27,7 @@ This plugin is still pretty much a work-in-progress.
 - "Go to Definition" support using nimsuggest.
 - Autocompletion using nimsuggest.
 - Find references to a symbol.
+- Get signature and documentation of a symbol.
 - Section movements!
 - NEP-1 style indentation!
 - And more...
