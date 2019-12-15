@@ -63,11 +63,16 @@ function! s:doc_handler(reply) abort dict
       endif
       let docs = split(eval(a:reply[7]), '\n')
       let signature = a:reply[2] . ': ' . a:reply[3]
+      let title = 'Documentation for symbol: ' . signature
+      let scratch = bufnr(title)
+      if scratch != -1
+        return
+      endif
       let scratch = nvim_create_buf(v:false, v:true)
       call nvim_buf_set_lines(scratch, 0, -1, v:true, docs)
       call nvim_buf_set_option(scratch, 'modifiable', v:false)
       call nvim_buf_set_option(scratch, 'filetype', 'rst')
-      call nvim_buf_set_option(scratch, 'bufhidden', 'delete')
+      call nvim_buf_set_option(scratch, 'bufhidden', 'wipe')
       call nvim_buf_set_name(scratch, 'Documentation for symbol: ' . signature)
       call nvim_set_current_tabpage(self.tabpage)
       execute 'pedit +buffer\ ' . scratch
