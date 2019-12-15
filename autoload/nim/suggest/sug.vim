@@ -5,14 +5,6 @@ let s:sugToCompleteType = {'skProc': 'f', 'skFunc': 'f', 'skMethod': 'f',
     \                      'skField': 'm', 'skEnumField': 'm', 'skForVar': 'v',
     \                      'skUnknown': '', 'skParam': 'v'}
 
-function! s:findStartingPosition(line, start) abort
-  let result = a:start - 1
-  while result > 0 && a:line[result - 1] =~ '\k'
-    let result -= 1
-  endwhile
-  return result + 1
-endfunction
-
 " Get completion candidates for ident under cursor asynchronously, one-by-one.
 "
 " callback: function(startpos, complete-item) where:
@@ -25,7 +17,7 @@ endfunction
 " as messages. However, this might change in the future.
 function! nim#suggest#sug#GetCandidates(callback) abort
   let pos = getcurpos()[1:2]
-  let startpos = s:findStartingPosition(getline('.'), pos[1])
+  let startpos = nim#suggest#utils#FindIdentifierStart()
   let opts = {'on_data': function('s:on_data'),
       \       'callback': function(a:callback, [startpos]),
       \       'pos': pos}

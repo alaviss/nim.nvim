@@ -80,3 +80,17 @@ function! nim#suggest#utils#Query(command, opts, ...)
   endtry
   return 0
 endfunction
+
+" Returns the cursor column where the Nim identifier under the cursor starts
+"
+" The current column will be returned if a valid Nim identifer is not found.
+function! nim#suggest#utils#FindIdentifierStart() abort
+  let line = getline('.')
+  let start = col('.')
+  let result = start - 1
+  while result > 0 && line[result] =~ '\k\|\w'
+    let result -= 1
+  endwhile
+  let result += 1
+  return result < start ? (line[result] =~ '\a' ? result + 1 : start) : start
+endfunction
