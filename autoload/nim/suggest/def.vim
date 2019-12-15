@@ -73,7 +73,7 @@ function! s:doc_handler(reply) abort dict
       call nvim_buf_set_option(scratch, 'modifiable', v:false)
       call nvim_buf_set_option(scratch, 'filetype', 'rst')
       call nvim_buf_set_option(scratch, 'bufhidden', 'wipe')
-      call nvim_buf_set_name(scratch, 'Documentation for symbol: ' . signature)
+      call nvim_buf_set_name(scratch, title)
       call nvim_set_current_tabpage(self.tabpage)
       execute 'pedit +buffer\ ' . scratch
     endif
