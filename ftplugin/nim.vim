@@ -15,6 +15,7 @@ setlocal foldmethod=indent
 setlocal formatoptions-=t formatoptions+=croql
 setlocal include=^\\s*\\(from\\|import\\|include\\)
 setlocal suffixesadd=.nim
+setlocal keywordprg=:NimDocOf
 
 " required by the compiler
 setlocal expandtab
@@ -97,6 +98,9 @@ endfunction
 command! -buffer NimReferences call nim#suggest#use#ShowReferences()
 " display the type of symbol on cursor
 command! -buffer NimTypeOf call nim#suggest#def#ShowType()
+" display the documentation of symbol on cursor, arguments are ignored, only
+" used for keywordprg support
+command! -nargs=* -buffer NimDocOf call nim#suggest#def#ShowDoc()
 
 " scripted mappings
 noremap <script> <buffer> <silent> <Plug>NimGoToDefBuf :call nim#suggest#def#GoTo('b')<lf>
