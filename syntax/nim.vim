@@ -103,6 +103,9 @@ syntax region nimPragmaList
 syntax sync match nimSync grouphere NONE "^\%(proc\|func\|iterator\|method\)\s\+\a\w*\s*[(:=]"
 " sync at some special places
 syntax sync match nimSync grouphere NONE "^\%(discard\|let\|var\|const\|type\)"
+" sync at long string start
+syntax sync match nimSyncString grouphere nimString "\"\{3}"
+syntax sync match nimSyncString grouphere nimRawString "r\"\{3}"
 
 highlight default link nimKeywordOperator Operator
 highlight default link nimStatement       Statement
