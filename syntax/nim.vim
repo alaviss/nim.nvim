@@ -97,6 +97,8 @@ syntax keyword nimPragma contained inline borrow booldefine discardable noInit
 syntax keyword nimPragma contained requiresInit closure nimcall stdcall safecall
 syntax keyword nimPragma contained fastcall syscall noconv nanChecks infChecks floatChecks
 syntax keyword nimPragma contained size base raises tags effects inject gensym
+" experimental pragmas
+syntax keyword nimPragma contained explain noRewrite package
 
 syntax region nimPragmaList
       \ start=+{\.+ end=+\.\?}+
