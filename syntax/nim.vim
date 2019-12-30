@@ -79,21 +79,28 @@ syntax match nimFloat display "\<\d\+\%(_\d\+\)*\%(\.\d\+\%(_\d\+\)*\)\%([eE][+-
 " if have exponent
 syntax match nimFloat display "\<\d\+\%(_\d\+\)*\%([eE][+-]\=\d\+\%(_\d\+\)*\)\%('\=\%([fF]\%(32\|64\)\=\|[dD]\)\)\=\>"
 
+" pragmas in Nim are matched style-insensitively, so we need to create custom
+" matches for them.
+function! s:matchPragmas(pragmas) abort
+  for i in a:pragmas
+    execute 'syntax match nimPragma contained display ''\<' . nim#SearchIdentifierRegex(i) . '\>'''
+  endfor
+endfunction
 " builtins pragma, these are not processed by nimsuggest highlighter
-syntax keyword nimPragma contained deprecated noSideEffect compileTime noReturn
-syntax keyword nimPragma contained acyclic final shallow pure asmNoStackFrame
-syntax keyword nimPragma contained error fatal warning hint line linearScanEnd
-syntax keyword nimPragma contained computedGoto unroll checks boundChecks
-syntax keyword nimPragma contained overflowChecks nilChecks assertions warnings
-syntax keyword nimPragma contained hints optimization patterns callconv push pop
-syntax keyword nimPragma contained register global pragma hint used experimental
-syntax keyword nimPragma contained bitsize voliatile nodecl header
-syntax keyword nimPragma contained incompletestruct compile link passC passL
-syntax keyword nimPragma contained emit importcpp importobjc codegendecl
-syntax keyword nimPragma contained injectstmt intdefine strdefine cdecl importc
-syntax keyword nimPragma contained exportc extern bycopy byref varargs union
-syntax keyword nimPragma contained packed dynlib threadvar gcsafe locks guard
-syntax keyword nimPragma contained inline borrow booldefine discardable
+call s:matchPragmas(['deprecated', 'noSideEffect', 'compileTime', 'noReturn',
+     \               'acyclic', 'final', 'shallow', 'pure', 'asmNoStackFrame',
+     \               'error', 'fatal', 'warning', 'hint', 'line', 'linearScanEnd',
+     \               'computedGoto', 'unroll', 'checks', 'boundChecks',
+     \               'overflowChecks', 'nilChecks', 'assertions', 'warnings',
+     \               'hints', 'optimization', 'patterns', 'callconv', 'push',
+     \               'pop',' register', 'global', 'pragma', 'hint', 'used',
+     \               'experimental', 'bitsize', 'voliatile', 'nodecl', 'header',
+     \               'incompletestruct', 'compile', 'link', 'passC', 'passL',
+     \               'emit', 'importcpp', 'importobjc', 'codegendecl',
+     \               'injectstmt', 'intdefine', 'strdefine', 'cdecl', 'importc',
+     \               'exportc', 'extern', 'bycopy', 'byref', 'varargs', 'union',
+     \               'packed', 'dynlib', 'threadvar', 'gcsafe', 'locks', 'guard',
+     \               'inline', 'borrow', 'booldefine', 'discardable'])
 
 syntax region nimPragmaList
       \ start=+{\.+ end=+\.\?}+
