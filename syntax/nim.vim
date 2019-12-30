@@ -93,7 +93,10 @@ syntax keyword nimPragma contained emit importcpp importobjc codegendecl
 syntax keyword nimPragma contained injectstmt intdefine strdefine cdecl importc
 syntax keyword nimPragma contained exportc extern bycopy byref varargs union
 syntax keyword nimPragma contained packed dynlib threadvar gcsafe locks guard
-syntax keyword nimPragma contained inline borrow booldefine discardable
+syntax keyword nimPragma contained inline borrow booldefine discardable noInit
+syntax keyword nimPragma contained requiresInit closure nimcall stdcall safecall
+syntax keyword nimPragma contained fastcall syscall noconv nanChecks infChecks floatChecks
+syntax keyword nimPragma contained size base raises tags effects inject gensym
 
 syntax region nimPragmaList
       \ start=+{\.+ end=+\.\?}+
