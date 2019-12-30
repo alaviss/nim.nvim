@@ -100,7 +100,11 @@ call s:matchPragmas(['deprecated', 'noSideEffect', 'compileTime', 'noReturn',
      \               'injectstmt', 'intdefine', 'strdefine', 'cdecl', 'importc',
      \               'exportc', 'extern', 'bycopy', 'byref', 'varargs', 'union',
      \               'packed', 'dynlib', 'threadvar', 'gcsafe', 'locks', 'guard',
-     \               'inline', 'borrow', 'booldefine', 'discardable'])
+     \               'inline', 'borrow', 'booldefine', 'discardable', 'noInit',
+     \               'requiresInit', 'closure', 'nimcall', 'stdcall', 'safecall',
+     \               'fastcall', 'syscall', 'noconv', 'nanChecks', 'infChecks',
+     \               'floatChecks', 'size', 'base', 'raises', 'tags', 'effects',
+     \               'inject', 'gensym', 'explain', 'noRewrite', 'package'])
 
 syntax region nimPragmaList
       \ start=+{\.+ end=+\.\?}+
