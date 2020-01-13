@@ -104,7 +104,8 @@ call s:matchPragmas(['deprecated', 'noSideEffect', 'compileTime', 'noReturn',
      \               'requiresInit', 'closure', 'nimcall', 'stdcall', 'safecall',
      \               'fastcall', 'syscall', 'noconv', 'nanChecks', 'infChecks',
      \               'floatChecks', 'size', 'base', 'raises', 'tags', 'effects',
-     \               'inject', 'gensym', 'explain', 'noRewrite', 'package'])
+     \               'inject', 'gensym', 'explain', 'noRewrite', 'package',
+     \               'inheritable', 'constructor'])
 
 syntax region nimPragmaList
       \ start=+{\.+ end=+\.\?}+
