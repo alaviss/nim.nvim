@@ -273,7 +273,11 @@ function! s:findProjectMain(path) abort
           return ''
         endif
       endif
-      let candidate = fnameescape(fnamemodify(f, ':t:r') . '.nim')
+      let candidate = fnamemodify(f, ':t:r')
+      if fnamemodify(candidate, ':e') != 'nim'
+        let candidate .= 'nim'
+      endif
+      let candidate = fnameescape(candidate)
       for i in current != a:path && !empty(nimblepkg) ? [esccur, escprv] : [esccur]
         call extend(candidates, glob(i . candidate, v:true, v:true))
       endfor
