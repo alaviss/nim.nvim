@@ -185,7 +185,7 @@ function GetNimIndent(lnum)
       " Unless the previous line was a one-liner
       " Or the user has already dedented
       " Or it's a case expression
-      if (prevNonEmptyLine =~ '^\s*\(case\|if\|when\|try\|of\)\>') ||
+      if (prevNonEmptyLine =~ '^\s*\(case\|\%(el\)\?if\|when\|try\|of\)\>') ||
             \ (curIndent <= prevIndent - shiftwidth())
         return -1
       else
