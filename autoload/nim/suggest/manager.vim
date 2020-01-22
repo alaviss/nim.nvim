@@ -275,7 +275,7 @@ function! s:findProjectMain(path) abort
       endif
       let candidate = fnamemodify(f, ':t:r')
       if fnamemodify(candidate, ':e') != 'nim'
-        let candidate .= 'nim'
+        let candidate .= '.nim'
       endif
       let candidate = fnameescape(candidate)
       for i in current != a:path && !empty(nimblepkg) ? [esccur, escprv] : [esccur]
