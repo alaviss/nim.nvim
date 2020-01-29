@@ -32,8 +32,8 @@ syntax keyword nimStructure       enum object tuple
 syntax keyword nimPreProcStmt     alignof compiles defined sizeof
 
 syntax match nimComment      "#.*$" contains=nimTodo,@Spell
-syntax region nimLongComment start="#\[" end="]#" contains=nimTodo,nimLongComment,@Spell
-syntax region nimLongComment start="##\[" end="]##" contains=nimTodo,nimLongComment,@Spell
+syntax region nimLongDocComment start='##\[' end=']##' contains=nimTodo,nimLongDocComment,@Spell
+syntax region nimLongComment start='#\[' end=']#' contains=nimTodo,nimLongComment,nimLongDocComment,@Spell
 syntax keyword nimTodo       FIXME NOTE NOTES TODO XXX contained
 
 syntax region nimString
@@ -132,6 +132,7 @@ highlight default link nimStructure       Structure
 highlight default link nimPreProcStmt     Macro
 highlight default link nimComment         Comment
 highlight default link nimTodo            Todo
+highlight default link nimLongDocComment  Comment
 highlight default link nimLongComment     Comment
 highlight default link nimString          String
 highlight default link nimEscapeStr       SpecialChar
