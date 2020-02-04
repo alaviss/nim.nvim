@@ -96,6 +96,11 @@ function! s:goto_handler(reply) abort dict
       endif
       call win_gotoid(self.window)
       if openCmd == 'edit' && bufnr(file) == winbufnr(self.window)
+        " setpos() won't add the position to the jumplist, but
+        " m' does (see :h jumplist), so use that instead.
+        " We also only use this here since editing commands add a jump
+        " automatically.
+        normal! m'
         call cursor([line, col])
       else
         execute openCmd '+' . 'call\ cursor([' . line . ',' . col . '])' fnameescape(file)
@@ -113,7 +118,7 @@ endfunction
 "           contains the definition, the cursor will be moved to the target
 "           position instead.
 "
-" Before jumping the ' mark will be set.
+" This is a motion function.
 "
 " If an another GoTo() is being done for the current window, no action
 " will be made. Additionally, if the window is destroyed before GoTo()
@@ -130,7 +135,6 @@ function! nim#suggest#def#GoTo(openIn) abort
       \       'openIn': a:openIn,
       \       'pos': getcurpos()[1:2]}
   let w:nimSugDefLock = v:true
-  call setpos("''", getcurpos())
   call nim#suggest#utils#Query('def', opts, v:false, v:true)
 endfunction
 
