@@ -3,7 +3,7 @@ let s:sugToCompleteType = {'skProc': 'f', 'skFunc': 'f', 'skMethod': 'f',
     \                      'skConst': 'd', 'skResult': 'v', 'skIterator': 'f',
     \                      'skConverter': 'd', 'skMacro': 'd', 'skTemplate': 'd',
     \                      'skField': 'm', 'skEnumField': 'm', 'skForVar': 'v',
-    \                      'skUnknown': '', 'skParam': 'v'}
+    \                      'skUnknown': '', 'skParam': 'v', 'skGenericParam': 't'}
 
 " Get completion candidates for ident under cursor asynchronously, one-by-one.
 "
