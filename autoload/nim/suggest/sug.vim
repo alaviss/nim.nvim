@@ -8,7 +8,7 @@ let s:sugToCompleteType = {'skProc': 'f', 'skFunc': 'f', 'skMethod': 'f',
 " Get completion candidates for ident under cursor asynchronously, one-by-one.
 "
 " callback: function(startpos, complete-item) where:
-"   startpos is the starting byte of the ident to be completed.
+"   startpos is the starting cursor column of the ident to be completed.
 "   complete-item is a Dict as described in :h complete-items. Once all
 "   results are returned, the callback will be invoked with an empty Dict.
 "
@@ -17,7 +17,7 @@ let s:sugToCompleteType = {'skProc': 'f', 'skFunc': 'f', 'skMethod': 'f',
 " as messages. However, this might change in the future.
 function! nim#suggest#sug#GetCandidates(callback) abort
   let pos = getcurpos()[1:2]
-  let startpos = nim#suggest#utils#FindIdentifierStart() - 1
+  let startpos = nim#suggest#utils#FindIdentifierStart()
   let opts = {'on_data': function('s:on_data'),
       \       'callback': function(a:callback, [startpos]),
       \       'pos': pos}
