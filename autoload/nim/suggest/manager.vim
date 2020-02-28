@@ -21,21 +21,18 @@
 "   'file': regarding files
 "   'connect': regarding connection
 
-" Poor man's typing. This is a method table for all SuggestInstance
-let s:SuggestInstance = {}
-
 " Checks if the given instance is running.
-function! s:SuggestInstance.isRunning() abort
+function! s:instance_isRunning() abort dict
   return self.job != 0
 endfunction
 
 " Checks if the given instance can receive connections.
-function! s:SuggestInstance.isReady() abort
+function! s:instance_isReady() abort dict
   return self.job != 0 && self.port != 0
 endfunction
 
 " Starts the instance, can also be used to restart a dead instance.
-function! s:SuggestInstance.start() abort
+function! s:instance_start() abort dict
   if self.isRunning()
     throw 'suggest-manager-running: instance is already running'
   endif
@@ -52,7 +49,7 @@ endfunction
 
 " A thin wrapper over jobstop() for stopping an instance. Does nothing if the
 " instance is not running.
-function! s:SuggestInstance.stop() abort dict
+function! s:instance_stop() abort dict
   if self.isRunning()
     call jobstop(self.job)
   endif
@@ -77,7 +74,7 @@ endfunction
 " on_data(0, [''], 'data').
 "
 " Will throw if instance is not running.
-function! s:SuggestInstance.message(data, opts, ...) abort dict
+function! s:instance_message(data, opts, ...) abort dict
   let mustReady = a:0 >= 1 ? a:1 : v:false
   let scoped = {}
   function scoped.message(nothrow) abort closure
@@ -123,7 +120,7 @@ endfunction
 " callback: function(event)
 "   event => 'ready': Instance is ready
 "   event => 'exit': Instance didn't finish initializing and exited
-function! s:SuggestInstance.addCallback(callback) abort dict
+function! s:instance_addCallback(callback) abort dict
   if !self.isRunning()
     throw 'suggest-manager-running: instance is not running'
   elseif self.isReady()
@@ -134,12 +131,12 @@ function! s:SuggestInstance.addCallback(callback) abort dict
 endfunction
 
 " Get the project directory responsible by the instance
-function! s:SuggestInstance.project() abort dict
+function! s:instance_project() abort dict
   return fnamemodify(self.file, ':h')
 endfunction
 
 " Given a path, check if it's covered by the current nimsuggest instance
-function! s:SuggestInstance.contains(path) abort
+function! s:instance_contains(path) abort dict
   let path = isdirectory(a:path) ? fnamemodify(a:path, ':p') : fnamemodify(a:path, ':p:h')
   return path =~ '\V\^' . escape(self.project(), '\')
 endfunction
@@ -167,7 +164,7 @@ endfunction
 " answer is required, pass v:true as the third parameter.
 
 " Will throw if instance is not running.
-function! s:SuggestInstance.query(command, opts, ...) abort
+function! s:instance_query(command, opts, ...) abort dict
   let mustReady = a:0 >= 1 ? a:1 : v:false
   if !has_key(a:opts, 'buffer')
     let a:opts['buffer'] = bufnr('')
@@ -334,8 +331,17 @@ function! nim#suggest#manager#NewInstance(config, file, callback) abort
       \         'on_stderr': nim#suggest#utils#BufferNewline(function('s:instanceHandler')),
       \         'on_exit': nim#suggest#utils#BufferNewline(function('s:instanceHandler')),
       \         'cb': a:callback,
-      \         'oneshots': []}
-  call extend(result, s:SuggestInstance)
+      \         'oneshots': [],
+      \         'isRunning': function('s:instance_isRunning'),
+      \         'isReady': function('s:instance_isReady'),
+      \         'start': function('s:instance_start'),
+      \         'stop': function('s:instance_stop'),
+      \         'message': function('s:instance_message'),
+      \         'addCallback': function('s:instance_addCallback'),
+      \         'project': function('s:instance_project'),
+      \         'contains': function('s:instance_contains'),
+      \         'query': function('s:instance_query')}
+
   if !has_key(a:config, 'autofind') || a:config.autofind
     let projectFile = s:findProjectMain(result.project())
     if !empty(projectFile)
