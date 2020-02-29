@@ -5,9 +5,7 @@
 " Licensed under the terms of the ISC license,
 " see the file "license.txt" included within this distribution.
 
-let s:Methods = {}
-
-function s:Methods.on_data(reply) abort
+function s:hl_on_data(reply) abort dict
   if empty(a:reply)
     if self.updated
       if exists('*nvim_buf_clear_namespace')
@@ -35,7 +33,7 @@ function s:Methods.on_data(reply) abort
   endif
 endfunction
 
-function s:Methods.highlight() abort
+function s:highlight() abort dict
   if self.locked
     let self.queued = v:true
     return
@@ -55,7 +53,9 @@ function! nim#suggest#highlight#HighlightBuffer()
         \ 'buffer': bufnr(''),
         \ 'locked': v:false,
         \ 'queued': v:false,
-        \ 'updated': v:false
+        \ 'updated': v:false,
+        \ 'highlight': function('s:highlight'),
+        \ 'on_data': function('s:hl_on_data')
         \}
     if exists('*nvim_create_namespace')
       let b:nimSugHighlight['ids'] = [
@@ -68,7 +68,6 @@ function! nim#suggest#highlight#HighlightBuffer()
           \  nvim_buf_add_highlight(b:nimSugHighlight.buffer, 0, '', 0, 0, 0)
           \]
     endif
-    call extend(b:nimSugHighlight, s:Methods)
   endif
 
   call b:nimSugHighlight.highlight()

@@ -5,6 +5,25 @@
 " Licensed under the terms of the ISC license,
 " see the file "license.txt" included within this distribution.
 
+function s:bufCb(cb, buffer, chan, data, stream) abort dict
+  let Cb = function(a:cb, self)
+
+  if a:stream == 'exit'
+    call Cb(a:chan, a:data, a:stream)
+    return
+  elseif a:data == ['']
+    call Cb(a:chan, '', a:stream)
+    return
+  endif
+
+  let a:buffer[-1] .= a:data[0]
+  call extend(a:buffer, a:data[1:])
+  while len(a:buffer) > 1
+    call Cb(a:chan, !empty(a:buffer[0]) ? a:buffer[0] : '\n', a:stream)
+    unlet a:buffer[0]
+  endwhile
+endfunction
+
 " Creates an `on_data`-compatible callback that buffers data by line.
 "
 " cb: function(chan, line, stream) dict
@@ -15,27 +34,7 @@
 "
 " The callback will be called with the assigned Dict as it's Dict.
 function! nim#suggest#utils#BufferNewline(cb) abort
-  let scoped = {}
-  let buffer = ['']
-  function! scoped.bufCb(chan, data, stream) abort closure
-    let Cb = function(a:cb, self)
-
-    if a:stream == 'exit'
-      call Cb(a:chan, a:data, a:stream)
-      return
-    elseif a:data == ['']
-      call Cb(a:chan, '', a:stream)
-      return
-    endif
-
-    let buffer[-1] .= a:data[0]
-    call extend(buffer, a:data[1:])
-    while len(buffer) > 1
-      call Cb(a:chan, !empty(buffer[0]) ? buffer[0] : '\n', a:stream)
-      unlet buffer[0]
-    endwhile
-  endfunction
-  return scoped.bufCb
+  return function('s:bufCb', [a:cb, ['']])
 endfunction
 
 " Pretty print a nim.nvim exception

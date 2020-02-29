@@ -55,6 +55,27 @@ function! s:instance_stop() abort dict
   endif
 endfunction
 
+function s:message_sendmsg(env, nothrow) abort dict
+  try
+    let channel = sockconnect('tcp', 'localhost:' . self.port, a:env.opts)
+  catch
+    if a:nothrow
+      call a:env.opts.on_data(0, [''], 'data')
+      return
+    else
+      throw 'suggest-manager-connect: unable to connect to nimsuggest'
+    endif
+  endtry
+  call chansend(channel, a:env.data)
+endfunction
+
+function s:message_onReady(env, event) abort dict
+  if a:event == 'ready'
+    call call(function('s:message_sendmsg'), [a:env, v:true], self)
+  else
+    call a:env.opts.on_data(0, [''], 'data')
+  endif
+endfunction
 " Messages the instance asynchronously.
 "
 " This function is a convenience wrapper around the editor's tcp messaging
@@ -76,41 +97,21 @@ endfunction
 " Will throw if instance is not running.
 function! s:instance_message(data, opts, ...) abort dict
   let mustReady = a:0 >= 1 ? a:1 : v:false
-  let scoped = {}
-  function scoped.message(nothrow) abort closure
-    try
-      let channel = sockconnect('tcp', 'localhost:' . self.port, a:opts)
-    catch
-      if a:nothrow
-        call a:opts.on_data(0, [''], 'data')
-        return
-      else
-        throw 'suggest-manager-connect: unable to connect to nimsuggest'
-      endif
-    endtry
-    call chansend(channel, a:data)
-  endfunction
-
-  function scoped.onReady(event) abort closure
-    if a:event == 'ready'
-      call scoped.message(v:true)
-    else
-      call a:opts.on_data(0, [''], 'data')
-    endif
-  endfunction
-  let scoped.message = function(scoped.message, self)
-  let scoped.onReady = function(scoped.onReady, self)
+  let env = {
+  \   'data': a:data,
+  \   'opts': a:opts
+  \}
 
   if !self.isReady()
     if !mustReady
-      call self.addCallback(scoped.onReady)
+      call self.addCallback(function('s:message_onReady', [env], self))
     elseif !self.isRunning()
       throw 'suggest-manager-running: instance is not running'
     else
       throw 'suggest-manager-ready: instance is not ready'
     endif
   else
-    call scoped.message(v:false)
+    call call(function('s:message_sendmsg'), [env, v:false], self)
   endif
 endfunction
 
@@ -141,6 +142,22 @@ function! s:instance_contains(path) abort dict
   return path =~ '\V\^' . escape(self.project(), '\')
 endfunction
 
+" Helper functions for query()
+function s:query_cleanup() abort dict
+  if !empty(self.dirtyFile)
+    call delete(self.dirtyFile)
+  endif
+  call self.opts.on_data([])
+endfunction
+
+function s:query_on_data(chan, line, stream) abort dict
+  if empty(a:line)
+    call chanclose(a:chan)
+    call self.cleanup()
+  else
+    call self.opts.on_data(split(trim(a:line), '\t', v:true))
+  endif
+endfunction
 " Send a query to the instance.
 "
 " command: A command string for nimsuggest (ie. 'highlight', 'sug', 'def', etc.)
@@ -190,23 +207,13 @@ function! s:instance_query(command, opts, ...) abort dict
     let fileQuery .= ':' . a:opts.pos[0] . ':' . (a:opts.pos[1] - 1)
   endif
 
-  let opts = {}
-  function opts.cleanup() abort closure
-    if !empty(dirtyFile)
-      call delete(dirtyFile)
-    endif
-    call a:opts.on_data([])
-  endfunction
-  function opts.on_data(chan, line, stream) abort closure
-    if empty(a:line)
-      call chanclose(a:chan)
-      call self.cleanup()
-    else
-      call a:opts.on_data(split(trim(a:line), '\t', v:true))
-    endif
-  endfunction
+  let opts = {
+  \   'opts': a:opts,
+  \   'dirtyFile': dirtyFile,
+  \   'cleanup': function('s:query_cleanup')
+  \}
 
-  let opts.on_data = nim#suggest#utils#BufferNewline(opts.on_data)
+  let opts.on_data = nim#suggest#utils#BufferNewline(function('s:query_on_data'))
   try
     call self.message([a:command . ' ' . fileQuery, ''], opts, mustReady)
   catch
@@ -215,22 +222,20 @@ function! s:instance_query(command, opts, ...) abort dict
   endtry
 endfunction
 
-function! s:instanceHandler(chan, line, stream) abort dict
-  let scoped = {}
-  function scoped.doOneshot(event) abort
-    if !empty(self.oneshots)
-      for F in self.oneshots
-        call F(a:event)
-      endfor
-      let self.oneshots = []
-    endif
-  endfunction
-  let scoped.doOneshot = function(scoped.doOneshot, self)
+function! s:doOneshot(event) abort dict
+  if !empty(self.oneshots)
+    for F in self.oneshots
+      call F(a:event)
+    endfor
+    let self.oneshots = []
+  endif
+endfunction
 
+function! s:instanceHandler(chan, line, stream) abort dict
   if a:stream == 'stdout' && self.port == 0
     let self.port = str2nr(a:line)
     call self.cb('ready', '')
-    call scoped.doOneshot('ready')
+    call call(function('s:doOneshot'), ['ready'], self)
     return
   elseif a:stream == 'stderr' && self.port == 0 && a:line =~ '^cannot find file:'
     call self.cb('error', 'suggest-manager-file: file cannot be opened by nimsuggest')
@@ -238,7 +243,7 @@ function! s:instanceHandler(chan, line, stream) abort dict
   elseif a:stream == 'exit'
     let self.job = 0
     let self.port = 0
-    call scoped.doOneshot('exit')
+    call call(function('s:doOneshot'), ['exit'], self)
   endif
   call self.cb(a:stream, a:line)
 endfunction
