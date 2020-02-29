@@ -7,11 +7,7 @@
 
 function s:hl_on_end() abort dict
   if self.updated
-    if exists('*nvim_buf_clear_namespace')
-      call nvim_buf_clear_namespace(self.buffer, self.ids[0], 0, -1)
-    else
-      call nvim_buf_clear_highlight(self.buffer, self.ids[0], 0, -1)
-    endif
+    call nvim_buf_clear_namespace(self.buffer, self.ids[0], 0, -1)
     call reverse(self.ids)
   endif
   let self.locked = v:false
@@ -59,21 +55,14 @@ function! nim#suggest#highlight#HighlightBuffer()
         \ 'locked': v:false,
         \ 'queued': v:false,
         \ 'updated': v:false,
+        \ 'ids': [
+        \   nvim_create_namespace('nim.nvim#1'),
+        \   nvim_create_namespace('nim.nvim#2')
+        \ ],
         \ 'highlight': function('s:highlight'),
         \ 'on_data': function('s:hl_on_data'),
         \ 'on_end': function('s:hl_on_end')
         \}
-    if exists('*nvim_create_namespace')
-      let b:nimSugHighlight['ids'] = [
-          \  nvim_create_namespace('nim.nvim#1'),
-          \  nvim_create_namespace('nim.nvim#2')
-          \]
-    else
-      let b:nimSugHighlight['ids'] = [
-          \  nvim_buf_add_highlight(b:nimSugHighlight.buffer, 0, '', 0, 0, 0),
-          \  nvim_buf_add_highlight(b:nimSugHighlight.buffer, 0, '', 0, 0, 0)
-          \]
-    endif
   endif
 
   call b:nimSugHighlight.highlight()

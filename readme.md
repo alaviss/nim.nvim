@@ -8,7 +8,7 @@ This plugin is still pretty much a work-in-progress.
 
 #### Requirements
 
-- neovim >= 0.3.0 (nimsuggest integration requires TCP byte sockets)
+- neovim >= 0.4.3
 - nim >= 0.20 ([choosenim] can be used to install this version)
 
 #### Installation

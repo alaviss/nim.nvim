@@ -5,8 +5,6 @@
 " Licensed under the terms of the ISC license,
 " see the file "license.txt" included within this distribution.
 
-let s:UseTooltip = exists('*nvim_open_win')
-
 function! s:setCloseOnMove(win) abort
   augroup nim_nvim_sig_tooltip_autoclose
     execute 'autocmd BufEnter,CursorMoved,CursorMovedI,InsertEnter * ++once call <SID>closeWin(' . a:win . ')'
@@ -31,26 +29,22 @@ function! s:type_handler(reply) abort dict
       if i[0] is# 'def' && !empty(i[3])
         let signature = i[2] . ': ' . i[3]
         let scratch = nvim_create_buf(v:false, v:true)
-        if s:UseTooltip
-          call nvim_buf_set_lines(scratch, 0, -1, v:true, [signature])
-          call nvim_buf_set_option(scratch, 'modifiable', v:false)
-          call nvim_buf_set_option(scratch, 'filetype', 'nim')
-          let float = nvim_open_win(
-          \   scratch,
-          \   v:false,
-          \   {
-          \     'relative': 'win',
-          \     'win': self.window,
-          \     'height': 1,
-          \     'width': strdisplaywidth(signature),
-          \     'bufpos': map(self.pos, 'v:val - 1'),
-          \     'style': 'minimal'
-          \   }
-          \)
-          call s:setCloseOnMove(float)
-        else
-          echomsg signature
-        endif
+        call nvim_buf_set_lines(scratch, 0, -1, v:true, [signature])
+        call nvim_buf_set_option(scratch, 'modifiable', v:false)
+        call nvim_buf_set_option(scratch, 'filetype', 'nim')
+        let float = nvim_open_win(
+        \   scratch,
+        \   v:false,
+        \   {
+        \     'relative': 'win',
+        \     'win': self.window,
+        \     'height': 1,
+        \     'width': strdisplaywidth(signature),
+        \     'bufpos': map(self.pos, 'v:val - 1'),
+        \     'style': 'minimal'
+        \   }
+        \)
+        call s:setCloseOnMove(float)
       endif
     endif
   endfor
