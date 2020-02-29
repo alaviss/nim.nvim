@@ -61,8 +61,7 @@ function! nim#suggest#highlight#HighlightBuffer()
         \ 'updated': v:false,
         \ 'highlight': function('s:highlight'),
         \ 'on_data': function('s:hl_on_data'),
-        \ 'on_end': function('s:hl_on_end'),
-        \ 'buf': nim#suggest#utils#NewLineBuffer()
+        \ 'on_end': function('s:hl_on_end')
         \}
     if exists('*nvim_create_namespace')
       let b:nimSugHighlight['ids'] = [
