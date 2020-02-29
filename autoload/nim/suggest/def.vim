@@ -26,7 +26,7 @@ endfunction
 
 function! s:type_handler(reply) abort dict
   if nvim_win_is_valid(self.window)
-    if !empty(a:reply) && a:reply[0] == 'def' && !empty(a:reply[3])
+    if a:reply isnot v:null && a:reply[0] == 'def' && !empty(a:reply[3])
       let signature = a:reply[2] . ': ' . a:reply[3]
       let scratch = nvim_create_buf(v:false, v:true)
       if s:UseTooltip
@@ -55,7 +55,7 @@ endfunction
 
 function! s:doc_handler(reply) abort dict
   if nvim_tabpage_is_valid(self.tabpage)
-    if empty(a:reply)
+    if a:reply is v:null
       call nvim_tabpage_set_var(self.tabpage, 'nimSugPreviewLock', v:false)
     elseif a:reply[0] == 'def'
       if len(a:reply[7]) <= 2
@@ -82,7 +82,7 @@ endfunction
 
 function! s:goto_handler(reply) abort dict
   if nvim_win_is_valid(self.window)
-    if empty(a:reply)
+    if a:reply is v:null
       call settabwinvar(0, self.window, 'nimSugDefLock', v:false)
     elseif a:reply[0] == 'def'
       let file = a:reply[4]

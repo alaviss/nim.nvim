@@ -25,7 +25,7 @@ function! nim#suggest#sug#GetCandidates(callback) abort
 endfunction
 
 function! s:on_data(reply) abort dict
-  if empty(a:reply)
+  if a:reply is v:null
     call self.callback({})
   elseif a:reply[0] == 'sug'
     let result = {'word': split(a:reply[2], '\i\.\zs')[-1],

@@ -5,7 +5,7 @@
 
 function! s:on_data(reply) abort dict
   if nvim_win_is_valid(self.window)
-    if empty(a:reply)
+    if a:reply is v:null
       call settabwinvar(0, self.window, 'nimSugLocListLock', v:false)
     " Don't display gensym-ed symbols
     elseif a:reply[0] == 'outline' && a:reply[2] !~ '`gensym\d\+$'

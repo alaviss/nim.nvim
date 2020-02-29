@@ -6,7 +6,7 @@
 " see the file "license.txt" included within this distribution.
 
 function s:hl_on_data(reply) abort dict
-  if empty(a:reply)
+  if a:reply is v:null
     if self.updated
       if exists('*nvim_buf_clear_namespace')
         call nvim_buf_clear_namespace(self.buffer, self.ids[0], 0, -1)
