@@ -5,12 +5,13 @@ let s:sugToCompleteType = {'skProc': 'f', 'skFunc': 'f', 'skMethod': 'f',
     \                      'skField': 'm', 'skEnumField': 'm', 'skForVar': 'v',
     \                      'skUnknown': '', 'skParam': 'v', 'skGenericParam': 't'}
 
-" Get completion candidates for ident under cursor asynchronously, one-by-one.
+" Get completion candidates for ident under cursor asynchronously.
 "
-" callback: function(startpos, complete-item) where:
+" callback: function(startpos, complete-items) where:
 "   startpos is the starting cursor column of the ident to be completed.
-"   complete-item is a Dict as described in :h complete-items. Once all
-"   results are returned, the callback will be invoked with an empty Dict.
+"   complete-items is as described in :h complete-items. The results will be
+"   passed by chunks as they are made available. Once all results are received
+"   v:null will be passed as complete-items
 "
 " As this function is designed to easily compose with asynchronous completion
 " frameworks, it does not return nor throw. Errors are displayed to the user
@@ -26,41 +27,47 @@ function! nim#suggest#sug#GetCandidates(callback) abort
 endfunction
 
 function! s:on_end() abort dict
-  call self.callback({})
+  call self.callback(v:null)
 endfunction
 
 function! s:on_data(reply) abort dict
+  let result = []
   for i in a:reply
     let i = split(i, '\t', v:true)
     if i[0] is# 'sug'
-      let result = {'word': split(i[2], '\i\.\zs')[-1],
-          \         'menu': i[3],
-          \         'info': len(i[7]) > 2 ? trim(eval(i[7])) : ' ',
-          \         'icase': 1,
-          \         'dup': 1}
-      try
-        let result.kind = s:sugToCompleteType[i[1]]
-      catch
+      call add(result,
+           \   {'word': split(i[2], '\i\.\zs')[-1],
+           \    'menu': i[3],
+           \    'info': len(i[7]) > 2 ? trim(eval(i[7])) : ' ',
+           \    'icase': 1,
+           \    'dup': 1})
+      if has_key(s:sugToCompleteType, i[1])
+        let result[-1].kind = s:sugToCompleteType[i[1]]
+      else
+        " it still works without kind, so we just pop a warning and pray that
+        " people actually look at it to report.
         echomsg 'suggest-sug: error: unknown symbol kind ''' . i[1] . ''''
-      endtry
-      call self.callback(result)
+      endif
     endif
   endfor
+  if len(result) > 0
+    call self.callback(result)
+  endif
+endfunction
+
+" Helper for GetAllCandidates
+function s:accumulator(cb, buf, startpos, candidates) abort
+  if a:candidates isnot v:null
+    call extend(a:buf, a:candidates)
+  else
+    call a:cb(a:startpos, a:buf)
+  endif
 endfunction
 
 " Get all completion candidates asynchronously.
 "
-" Similar to GetCandidates(), but the callback will be invoked with a list of
-" complete-item instead.
+" Similar to GetCandidates(), but buffers complete-items and only invoke the
+" callback when all results are received.
 function! nim#suggest#sug#GetAllCandidates(callback) abort
-  let items = []
-  let scoped = {}
-  function scoped.accumulator(startpos, candidate) abort closure
-    if !empty(a:candidate)
-      call add(items, a:candidate)
-    else
-      call a:callback(a:startpos, items)
-    endif
-  endfunction
-  call nim#suggest#sug#GetCandidates(scoped.accumulator)
+  call nim#suggest#sug#GetCandidates(function('s:accumulator', [a:callback, []]))
 endfunction
