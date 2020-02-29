@@ -8,9 +8,9 @@
 function s:bufCb(env, chan, data, stream) abort dict
   let Cb = function(a:env.cb, self)
 
-  if a:stream == 'exit'
+  if a:stream is# 'exit'
     call Cb(a:chan, a:data, a:stream)
-  elseif a:data == ['']
+  elseif a:data ==# ['']
     call Cb(a:chan, v:null, a:stream)
   else
     " more than one line is received, and/or the last buffer completed
@@ -93,7 +93,7 @@ endfunction
 function! nim#suggest#utils#FindIdentifierStart() abort
   let line = getline('.')
   let start = col('.')
-  if mode() == 'i'
+  if mode() is# 'i'
     " when in insert mode, the cursor will be placed at the next character,
     " so we reduce it to get the right position
     let start -= 1

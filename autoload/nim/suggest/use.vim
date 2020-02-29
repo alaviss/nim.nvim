@@ -16,12 +16,12 @@ function! s:on_data(reply) abort dict
   if nvim_win_is_valid(self.window)
     if a:reply is v:null
       call settabwinvar(0, self.window, 'nimSugLocListLock', v:false)
-    elseif a:reply[0] == 'def'
+    elseif a:reply[0] is# 'def'
       call setloclist(self.window, [], ' ',
            \          {'title': 'References to symbol: ' . a:reply[2]})
       call win_gotoid(self.window)
       lopen
-    elseif a:reply[0] == 'use'
+    elseif a:reply[0] is# 'use'
       let filename = a:reply[4]
       let lnum = str2nr(a:reply[5])
       call setloclist(self.window,

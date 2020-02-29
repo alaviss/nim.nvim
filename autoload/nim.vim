@@ -5,9 +5,9 @@ function nim#SearchIdentifierRegex(ident)
   while i < len(a:ident)
     let c = a:ident[i]
     let underscore = i < len(a:ident) - 1 ? '_\?' : ''
-    if i == 0 && c =~ '\a'
+    if i is 0 && c =~ '\a'
       let result .= escape(c, '\/ ') . underscore
-    elseif c == '_'
+    elseif c is '_'
       let result .= ''
     elseif c =~ '\k'
       let result .= '\%('. tolower(c) . '\|' . toupper(c) . '\)' . underscore
@@ -28,11 +28,11 @@ function nim#StarSearchRegex()
     let start -= 1
   endwhile
   let match = matchstrpos(line, '\a\k*', start)
-  if match[0] == ''
+  if match[0] is ''
     return ''
   endif
   let synName = synIDattr(synID(line('.'), match[1] + 1, v:true), "name")
-  if synName != '' && synName !~ '\(Comment\|String\|nimCharacter\)$'
+  if synName isnot '' && synName !~# '\(Comment\|String\|nimCharacter\)$'
     return '\V' . match[0]
   else
     return nim#SearchIdentifierRegex(match[0])

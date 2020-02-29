@@ -23,12 +23,12 @@
 
 " Checks if the given instance is running.
 function! s:instance_isRunning() abort dict
-  return self.job != 0
+  return self.job isnot 0
 endfunction
 
 " Checks if the given instance can receive connections.
 function! s:instance_isReady() abort dict
-  return self.job != 0 && self.port != 0
+  return self.job isnot 0 && self.port isnot 0
 endfunction
 
 " Starts the instance, can also be used to restart a dead instance.
@@ -39,9 +39,9 @@ function! s:instance_start() abort dict
   let self.port = 0
   let self.job = 0
   let job = jobstart([self.cmd] + self.args + [self.file], self)
-  if job == 0
+  if job is 0
     throw 'suggest-manager-exec: unable to start nimsuggest'
-  elseif job == -1
+  elseif job is -1
     throw 'suggest-manager-exec: nimsuggest (' . self.cmd . ') cannot be executed'
   endif
   let self.job = job
@@ -70,7 +70,7 @@ function s:message_sendmsg(env, nothrow) abort dict
 endfunction
 
 function s:message_onReady(env, event) abort dict
-  if a:event == 'ready'
+  if a:event is# 'ready'
     call call(function('s:message_sendmsg'), [a:env, v:true], self)
   else
     call a:env.opts.on_data(0, [''], 'data')
@@ -139,7 +139,7 @@ endfunction
 " Given a path, check if it's covered by the current nimsuggest instance
 function! s:instance_contains(path) abort dict
   let path = isdirectory(a:path) ? fnamemodify(a:path, ':p') : fnamemodify(a:path, ':p:h')
-  return path =~ '\V\^' . escape(self.project(), '\')
+  return path =~# '\V\^' . escape(self.project(), '\')
 endfunction
 
 " Helper functions for query()
@@ -231,15 +231,15 @@ function! s:doOneshot(event) abort dict
 endfunction
 
 function! s:instanceHandler(chan, line, stream) abort dict
-  if a:stream == 'stdout' && self.port == 0
+  if a:stream is# 'stdout' && self.port is 0
     let self.port = str2nr(a:line)
     call self.cb('ready', '')
     call call(function('s:doOneshot'), ['ready'], self)
     return
-  elseif a:stream == 'stderr' && self.port == 0 && a:line =~ '^cannot find file:'
+  elseif a:stream is# 'stderr' && self.port is 0 && a:line =~# '^cannot find file:'
     call self.cb('error', 'suggest-manager-file: file cannot be opened by nimsuggest')
     return
-  elseif a:stream == 'exit'
+  elseif a:stream is# 'exit'
     let self.job = 0
     let self.port = 0
     call call(function('s:doOneshot'), ['exit'], self)
@@ -264,9 +264,9 @@ function! s:findProjectMain(path) abort
     endfor
 
     for f in configs
-      if f == 'config.nims'
+      if f is? 'config.nims'
         continue
-      elseif fnamemodify(f, ':e') == 'nimble'
+      elseif fnamemodify(f, ':e') is? 'nimble'
         if empty(nimblepkg)
           let nimblepkg = fnamemodify(f, ':t:r')
         else
@@ -275,11 +275,11 @@ function! s:findProjectMain(path) abort
         endif
       endif
       let candidate = fnamemodify(f, ':t:r')
-      if fnamemodify(candidate, ':e') != 'nim'
+      if fnamemodify(candidate, ':e') isnot? 'nim'
         let candidate .= '.nim'
       endif
       let candidate = fnameescape(candidate)
-      for i in current != a:path && !empty(nimblepkg) ? [esccur, escprv] : [esccur]
+      for i in current isnot# a:path && !empty(nimblepkg) ? [esccur, escprv] : [esccur]
         call extend(candidates, glob(i . candidate, v:true, v:true))
       endfor
     endfor
@@ -295,7 +295,7 @@ function! s:findProjectMain(path) abort
     endif
     let prev = current
     let current = fnamemodify(current, ':h')
-    if prev == current
+    if prev is# current
       return ''
     endif
   endwhile
@@ -320,9 +320,9 @@ endfunction
 " edit the dict without using the functions in this file.
 function! nim#suggest#manager#NewInstance(config, file, callback) abort
   let help = system([a:config.nimsuggest, '--help'])
-  if v:shell_error == -1
+  if v:shell_error is -1
     throw 'suggest-manager-exec: nimsuggest (' . a:config.nimsuggest . ') cannot be executed'
-  elseif help !~ '--autobind'
+  elseif help !~# '--autobind'
     throw 'suggest-manager-compat: only nimsuggest >= 0.20.0 is supported'
   endif
 

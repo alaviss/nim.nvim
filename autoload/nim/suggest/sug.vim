@@ -27,7 +27,7 @@ endfunction
 function! s:on_data(reply) abort dict
   if a:reply is v:null
     call self.callback({})
-  elseif a:reply[0] == 'sug'
+  elseif a:reply[0] is# 'sug'
     let result = {'word': split(a:reply[2], '\i\.\zs')[-1],
         \         'menu': a:reply[3],
         \         'info': len(a:reply[7]) > 2 ? eval(a:reply[7]) : ' ',

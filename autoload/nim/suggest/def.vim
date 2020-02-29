@@ -14,19 +14,19 @@ function! s:setCloseOnMove(win) abort
 endfunction
 
 function! s:closeWin(win) abort
-  if win_getid() == a:win
+  if win_getid() is a:win
     call s:setCloseOnMove(a:win)
     return
   endif
   let buf = winbufnr(a:win)
-  if buf != -1
+  if buf isnot -1
     execute 'bwipeout ' . buf
   endif
 endfunction
 
 function! s:type_handler(reply) abort dict
   if nvim_win_is_valid(self.window)
-    if a:reply isnot v:null && a:reply[0] == 'def' && !empty(a:reply[3])
+    if a:reply isnot v:null && a:reply[0] is# 'def' && !empty(a:reply[3])
       let signature = a:reply[2] . ': ' . a:reply[3]
       let scratch = nvim_create_buf(v:false, v:true)
       if s:UseTooltip
@@ -57,25 +57,23 @@ function! s:doc_handler(reply) abort dict
   if nvim_tabpage_is_valid(self.tabpage)
     if a:reply is v:null
       call nvim_tabpage_set_var(self.tabpage, 'nimSugPreviewLock', v:false)
-    elseif a:reply[0] == 'def'
-      if len(a:reply[7]) <= 2
-        return
+    elseif a:reply[0] is# 'def'
+      if len(a:reply[7]) > 2
+        let docs = split(eval(a:reply[7]), '\n')
+        let signature = a:reply[2] . ': ' . a:reply[3]
+        let title = 'Documentation for symbol: ' . signature
+        let scratch = bufnr(title)
+        if scratch is -1
+          let scratch = nvim_create_buf(v:false, v:true)
+          call nvim_buf_set_lines(scratch, 0, -1, v:true, docs)
+          call nvim_buf_set_option(scratch, 'modifiable', v:false)
+          call nvim_buf_set_option(scratch, 'filetype', 'rst')
+          call nvim_buf_set_option(scratch, 'bufhidden', 'wipe')
+          call nvim_buf_set_name(scratch, title)
+          call nvim_set_current_tabpage(self.tabpage)
+          execute 'pedit +buffer\ ' . scratch
+        endif
       endif
-      let docs = split(eval(a:reply[7]), '\n')
-      let signature = a:reply[2] . ': ' . a:reply[3]
-      let title = 'Documentation for symbol: ' . signature
-      let scratch = bufnr(title)
-      if scratch != -1
-        return
-      endif
-      let scratch = nvim_create_buf(v:false, v:true)
-      call nvim_buf_set_lines(scratch, 0, -1, v:true, docs)
-      call nvim_buf_set_option(scratch, 'modifiable', v:false)
-      call nvim_buf_set_option(scratch, 'filetype', 'rst')
-      call nvim_buf_set_option(scratch, 'bufhidden', 'wipe')
-      call nvim_buf_set_name(scratch, title)
-      call nvim_set_current_tabpage(self.tabpage)
-      execute 'pedit +buffer\ ' . scratch
     endif
   endif
 endfunction
@@ -84,18 +82,18 @@ function! s:goto_handler(reply) abort dict
   if nvim_win_is_valid(self.window)
     if a:reply is v:null
       call settabwinvar(0, self.window, 'nimSugDefLock', v:false)
-    elseif a:reply[0] == 'def'
+    elseif a:reply[0] is# 'def'
       let file = a:reply[4]
       let line = a:reply[5]
       let col = a:reply[6] + 1
       let openCmd = 'edit'
-      if self.openIn == 'v'
+      if self.openIn is# 'v'
         let openCmd = 'vsplit'
-      elseif self.openIn == 's'
+      elseif self.openIn is# 's'
         let openCmd = 'split'
       endif
       call win_gotoid(self.window)
-      if openCmd == 'edit' && bufnr(file) == winbufnr(self.window)
+      if openCmd is# 'edit' && bufnr(file) is winbufnr(self.window)
         " setpos() won't add the position to the jumplist, but
         " m' does (see :h jumplist), so use that instead.
         " We also only use this here since editing commands add a jump

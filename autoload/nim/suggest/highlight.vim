@@ -22,7 +22,7 @@ function s:hl_on_data(reply) abort dict
         call self.highlight()
       endif
     endif
-  elseif a:reply[0] == 'highlight'
+  elseif a:reply[0] is# 'highlight'
     let self.updated = v:true
     " replace sk prefix with ours
     let group = 'nimSug' . a:reply[1][2:]

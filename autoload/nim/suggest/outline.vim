@@ -8,7 +8,7 @@ function! s:on_data(reply) abort dict
     if a:reply is v:null
       call settabwinvar(0, self.window, 'nimSugLocListLock', v:false)
     " Don't display gensym-ed symbols
-    elseif a:reply[0] == 'outline' && a:reply[2] !~ '`gensym\d\+$'
+    elseif a:reply[0] is# 'outline' && a:reply[2] !~# '`gensym\d\+$'
       let prefix = tolower(a:reply[1][2:])
       call setloclist(self.window,
            \          [{
