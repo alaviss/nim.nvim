@@ -26,7 +26,7 @@ endfunction
 
 function! s:type_handler(reply) abort dict
   if nvim_win_is_valid(self.window)
-    if a:reply isnot v:null && a:reply[0] is# 'def' && !empty(a:reply[3])
+    if a:reply[0] is# 'def' && !empty(a:reply[3])
       let signature = a:reply[2] . ': ' . a:reply[3]
       let scratch = nvim_create_buf(v:false, v:true)
       if s:UseTooltip
@@ -53,11 +53,13 @@ function! s:type_handler(reply) abort dict
   endif
 endfunction
 
+function! s:doc_cleanup() abort dict
+  call nvim_tabpage_set_var(self.tabpage, 'nimSugPreviewLock', v:false)
+endfunction
+
 function! s:doc_handler(reply) abort dict
   if nvim_tabpage_is_valid(self.tabpage)
-    if a:reply is v:null
-      call nvim_tabpage_set_var(self.tabpage, 'nimSugPreviewLock', v:false)
-    elseif a:reply[0] is# 'def'
+    if a:reply[0] is# 'def'
       if len(a:reply[7]) > 2
         let docs = split(eval(a:reply[7]), '\n')
         let signature = a:reply[2] . ': ' . a:reply[3]
@@ -78,11 +80,13 @@ function! s:doc_handler(reply) abort dict
   endif
 endfunction
 
+function! s:goto_cleanup() abort dict
+  call settabwinvar(0, self.window, 'nimSugDefLock', v:false)
+endfunction
+
 function! s:goto_handler(reply) abort dict
   if nvim_win_is_valid(self.window)
-    if a:reply is v:null
-      call settabwinvar(0, self.window, 'nimSugDefLock', v:false)
-    elseif a:reply[0] is# 'def'
+    if a:reply[0] is# 'def'
       let file = a:reply[4]
       let line = a:reply[5]
       let col = a:reply[6] + 1
@@ -129,6 +133,7 @@ function! nim#suggest#def#GoTo(openIn) abort
     return
   endif
   let opts = {'on_data': function('s:goto_handler'),
+      \       'on_end': function('s:goto_cleanup'),
       \       'window': win_getid(),
       \       'openIn': a:openIn,
       \       'pos': getcurpos()[1:2]}
@@ -159,6 +164,7 @@ function! nim#suggest#def#ShowDoc() abort
   if !exists('t:nimSugPreviewLock') || !t:nimSugPreviewLock
     let t:nimSugPreviewLock = v:true
     let opts = {'on_data': function('s:doc_handler'),
+        \       'on_end': function('s:doc_cleanup'),
         \       'tabpage': nvim_get_current_tabpage(),
         \       'pos': getcurpos()[1:2]}
     call nim#suggest#utils#Query('def', opts, v:false, v:true)

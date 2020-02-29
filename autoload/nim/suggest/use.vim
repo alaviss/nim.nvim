@@ -12,11 +12,13 @@ function! s:getText(filename, lnum) abort
   endif
 endfunction
 
+function! s:on_end() abort dict
+  call settabwinvar(0, self.window, 'nimSugLocListLock', v:false)
+endfunction
+
 function! s:on_data(reply) abort dict
   if nvim_win_is_valid(self.window)
-    if a:reply is v:null
-      call settabwinvar(0, self.window, 'nimSugLocListLock', v:false)
-    elseif a:reply[0] is# 'def'
+    if a:reply[0] is# 'def'
       call setloclist(self.window, [], ' ',
            \          {'title': 'References to symbol: ' . a:reply[2]})
       call win_gotoid(self.window)
@@ -47,6 +49,7 @@ function! nim#suggest#use#ShowReferences() abort
   if !exists('w:nimSugLocListLock') || !w:nimSugLocListLock
     let opts = {
         \         'on_data': function('s:on_data'),
+        \         'on_end': function('s:on_end'),
         \         'window': win_getid(),
         \         'pos': getcurpos()[1:2]
         \      }

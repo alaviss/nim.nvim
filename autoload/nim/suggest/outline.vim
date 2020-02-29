@@ -3,12 +3,13 @@
 " Licensed under the terms of the ISC license,
 " see the file "license.txt" included within this distribution.
 
+function! s:on_end() abort dict
+  call settabwinvar(0, self.window, 'nimSugLocListLock', v:false)
+endfunction
+
 function! s:on_data(reply) abort dict
   if nvim_win_is_valid(self.window)
-    if a:reply is v:null
-      call settabwinvar(0, self.window, 'nimSugLocListLock', v:false)
-    " Don't display gensym-ed symbols
-    elseif a:reply[0] is# 'outline' && a:reply[2] !~# '`gensym\d\+$'
+    if a:reply[0] is# 'outline' && a:reply[2] !~# '`gensym\d\+$'
       let prefix = tolower(a:reply[1][2:])
       call setloclist(self.window,
            \          [{
@@ -36,6 +37,7 @@ function! nim#suggest#outline#OpenLocList() abort
   if !exists('w:nimSugLocListLock') || !w:nimSugLocListLock
     let opts = {
         \         'on_data': function('s:on_data'),
+        \         'on_end': function('s:on_end'),
         \         'window': win_getid()
         \      }
     let w:nimSugLocListLock = v:true

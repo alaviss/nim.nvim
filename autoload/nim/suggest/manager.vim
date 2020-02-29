@@ -147,7 +147,9 @@ function s:query_cleanup() abort dict
   if !empty(self.dirtyFile)
     call delete(self.dirtyFile)
   endif
-  call self.opts.on_data(v:null)
+  if has_key(self.opts, 'on_end')
+    call self.opts.on_end()
+  endif
 endfunction
 
 function s:query_on_data(chan, line, stream) abort dict
@@ -165,9 +167,10 @@ endfunction
 "   'on_data': function(reply) [dict]: Will be called for every reply from
 "                                      nimsuggest. Each reply will be a List
 "                                      splitted by '\t' and passed to the
-"                                      callback. v:null will be passed on
-"                                      end-of-reply or if nimsuggest died
-"                                      before it could reply.
+"                                      callback.
+"   'on_end' (optional): function() [dict]: Will be called at end-of-message or
+"                                           if nimsuggest died before it could
+"                                           reply.
 "   'buffer' (optional): The number of the buffer containing the file used for
 "                        the query. If not exist will be populated with the
 "                        current buffer number.

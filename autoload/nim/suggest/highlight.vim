@@ -5,24 +5,26 @@
 " Licensed under the terms of the ISC license,
 " see the file "license.txt" included within this distribution.
 
-function s:hl_on_data(reply) abort dict
-  if a:reply is v:null
+function s:hl_on_end() abort dict
+  if self.updated
+    if exists('*nvim_buf_clear_namespace')
+      call nvim_buf_clear_namespace(self.buffer, self.ids[0], 0, -1)
+    else
+      call nvim_buf_clear_highlight(self.buffer, self.ids[0], 0, -1)
+    endif
+    call reverse(self.ids)
+  endif
+  let self.locked = v:false
+  if self.queued
+    let self.queued = v:false
     if self.updated
-      if exists('*nvim_buf_clear_namespace')
-        call nvim_buf_clear_namespace(self.buffer, self.ids[0], 0, -1)
-      else
-        call nvim_buf_clear_highlight(self.buffer, self.ids[0], 0, -1)
-      endif
-      call reverse(self.ids)
+      call self.highlight()
     endif
-    let self.locked = v:false
-    if self.queued
-      let self.queued = v:false
-      if self.updated
-        call self.highlight()
-      endif
-    endif
-  elseif a:reply[0] is# 'highlight'
+  endif
+endfunction
+
+function s:hl_on_data(reply) abort dict
+  if a:reply[0] is# 'highlight'
     let self.updated = v:true
     " replace sk prefix with ours
     let group = 'nimSug' . a:reply[1][2:]
@@ -55,7 +57,8 @@ function! nim#suggest#highlight#HighlightBuffer()
         \ 'queued': v:false,
         \ 'updated': v:false,
         \ 'highlight': function('s:highlight'),
-        \ 'on_data': function('s:hl_on_data')
+        \ 'on_data': function('s:hl_on_data'),
+        \ 'on_end': function('s:hl_on_end')
         \}
     if exists('*nvim_create_namespace')
       let b:nimSugHighlight['ids'] = [

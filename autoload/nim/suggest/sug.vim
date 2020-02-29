@@ -19,15 +19,18 @@ function! nim#suggest#sug#GetCandidates(callback) abort
   let pos = getcurpos()[1:2]
   let startpos = nim#suggest#utils#FindIdentifierStart()
   let opts = {'on_data': function('s:on_data'),
+      \       'on_end': function('s:on_end'),
       \       'callback': function(a:callback, [startpos]),
       \       'pos': pos}
   call nim#suggest#utils#Query('sug', opts)
 endfunction
 
+function! s:on_end() abort dict
+  call self.callback({})
+endfunction
+
 function! s:on_data(reply) abort dict
-  if a:reply is v:null
-    call self.callback({})
-  elseif a:reply[0] is# 'sug'
+  if a:reply[0] is# 'sug'
     let result = {'word': split(a:reply[2], '\i\.\zs')[-1],
         \         'menu': a:reply[3],
         \         'info': len(a:reply[7]) > 2 ? eval(a:reply[7]) : ' ',
