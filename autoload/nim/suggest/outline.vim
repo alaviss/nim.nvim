@@ -8,21 +8,24 @@ function! s:on_end() abort dict
 endfunction
 
 function! s:on_data(reply) abort dict
-  if nvim_win_is_valid(self.window)
-    if a:reply[0] is# 'outline' && a:reply[2] !~# '`gensym\d\+$'
-      let prefix = tolower(a:reply[1][2:])
-      call setloclist(self.window,
-           \          [{
-           \             'bufnr': self.buffer,
-           \             'filename': a:reply[4],
-           \             'lnum': str2nr(a:reply[5]),
-           \             'col': str2nr(a:reply[6] + 1),
-           \             'text': prefix . ' ' . join(split(a:reply[2], '\i\.\zs')[1:], '')
-           \          }],
-           \          'a'
-           \         )
+  for i in a:reply
+    let i = split(i, '\t', v:true)
+    if nvim_win_is_valid(self.window)
+      if i[0] is# 'outline' && i[2] !~# '`gensym\d\+$'
+        let prefix = tolower(i[1][2:])
+        call setloclist(self.window,
+             \          [{
+             \             'bufnr': self.buffer,
+             \             'filename': i[4],
+             \             'lnum': str2nr(i[5]),
+             \             'col': str2nr(i[6] + 1),
+             \             'text': prefix . ' ' . join(split(i[2], '\i\.\zs')[1:], '')
+             \          }],
+             \          'a'
+             \         )
+      endif
     endif
-  endif
+  endfor
 endfunction
 
 " Opens a location list containing the outline of the current module.

@@ -30,19 +30,22 @@ function! s:on_end() abort dict
 endfunction
 
 function! s:on_data(reply) abort dict
-  if a:reply[0] is# 'sug'
-    let result = {'word': split(a:reply[2], '\i\.\zs')[-1],
-        \         'menu': a:reply[3],
-        \         'info': len(a:reply[7]) > 2 ? eval(a:reply[7]) : ' ',
-        \         'icase': 1,
-        \         'dup': 1}
-    try
-      let result.kind = s:sugToCompleteType[a:reply[1]]
-    catch
-      echomsg 'suggest-sug: error: unknown symbol kind ''' . a:reply[1] . ''''
-    endtry
-    call self.callback(result)
-  endif
+  for i in a:reply
+    let i = split(i, '\t', v:true)
+    if i[0] is# 'sug'
+      let result = {'word': split(i[2], '\i\.\zs')[-1],
+          \         'menu': i[3],
+          \         'info': len(i[7]) > 2 ? trim(eval(i[7])) : ' ',
+          \         'icase': 1,
+          \         'dup': 1}
+      try
+        let result.kind = s:sugToCompleteType[i[1]]
+      catch
+        echomsg 'suggest-sug: error: unknown symbol kind ''' . i[1] . ''''
+      endtry
+      call self.callback(result)
+    endif
+  endfor
 endfunction
 
 " Get all completion candidates asynchronously.

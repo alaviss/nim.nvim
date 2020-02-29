@@ -25,32 +25,35 @@ function! s:closeWin(win) abort
 endfunction
 
 function! s:type_handler(reply) abort dict
-  if nvim_win_is_valid(self.window)
-    if a:reply[0] is# 'def' && !empty(a:reply[3])
-      let signature = a:reply[2] . ': ' . a:reply[3]
-      let scratch = nvim_create_buf(v:false, v:true)
-      if s:UseTooltip
-        call nvim_buf_set_lines(scratch, 0, -1, v:true, [signature])
-        call nvim_buf_set_option(scratch, 'modifiable', v:false)
-        call nvim_buf_set_option(scratch, 'filetype', 'nim')
-        let float = nvim_open_win(
-        \   scratch,
-        \   v:false,
-        \   {
-        \     'relative': 'win',
-        \     'win': self.window,
-        \     'height': 1,
-        \     'width': strdisplaywidth(signature),
-        \     'bufpos': map(self.pos, 'v:val - 1'),
-        \     'style': 'minimal'
-        \   }
-        \)
-        call s:setCloseOnMove(float)
-      else
-        echomsg signature
+  for i in a:reply
+    let i = split(i, '\t', v:true)
+    if nvim_win_is_valid(self.window)
+      if i[0] is# 'def' && !empty(i[3])
+        let signature = i[2] . ': ' . i[3]
+        let scratch = nvim_create_buf(v:false, v:true)
+        if s:UseTooltip
+          call nvim_buf_set_lines(scratch, 0, -1, v:true, [signature])
+          call nvim_buf_set_option(scratch, 'modifiable', v:false)
+          call nvim_buf_set_option(scratch, 'filetype', 'nim')
+          let float = nvim_open_win(
+          \   scratch,
+          \   v:false,
+          \   {
+          \     'relative': 'win',
+          \     'win': self.window,
+          \     'height': 1,
+          \     'width': strdisplaywidth(signature),
+          \     'bufpos': map(self.pos, 'v:val - 1'),
+          \     'style': 'minimal'
+          \   }
+          \)
+          call s:setCloseOnMove(float)
+        else
+          echomsg signature
+        endif
       endif
     endif
-  endif
+  endfor
 endfunction
 
 function! s:doc_cleanup() abort dict
@@ -58,26 +61,29 @@ function! s:doc_cleanup() abort dict
 endfunction
 
 function! s:doc_handler(reply) abort dict
-  if nvim_tabpage_is_valid(self.tabpage)
-    if a:reply[0] is# 'def'
-      if len(a:reply[7]) > 2
-        let docs = split(eval(a:reply[7]), '\n')
-        let signature = a:reply[2] . ': ' . a:reply[3]
-        let title = 'Documentation for symbol: ' . signature
-        let scratch = bufnr(title)
-        if scratch is -1
-          let scratch = nvim_create_buf(v:false, v:true)
-          call nvim_buf_set_lines(scratch, 0, -1, v:true, docs)
-          call nvim_buf_set_option(scratch, 'modifiable', v:false)
-          call nvim_buf_set_option(scratch, 'filetype', 'rst')
-          call nvim_buf_set_option(scratch, 'bufhidden', 'wipe')
-          call nvim_buf_set_name(scratch, title)
-          call nvim_set_current_tabpage(self.tabpage)
-          execute 'pedit +buffer\ ' . scratch
+  for i in a:reply
+    let i = split(i, '\t', v:true)
+    if nvim_tabpage_is_valid(self.tabpage)
+      if i[0] is# 'def'
+        if len(i[7]) > 2
+          let docs = split(trim(eval(i[7])), '\n')
+          let signature = i[2] . ': ' . i[3]
+          let title = 'Documentation for symbol: ' . signature
+          let scratch = bufnr(title)
+          if scratch is -1
+            let scratch = nvim_create_buf(v:false, v:true)
+            call nvim_buf_set_lines(scratch, 0, -1, v:true, docs)
+            call nvim_buf_set_option(scratch, 'modifiable', v:false)
+            call nvim_buf_set_option(scratch, 'filetype', 'rst')
+            call nvim_buf_set_option(scratch, 'bufhidden', 'wipe')
+            call nvim_buf_set_name(scratch, title)
+            call nvim_set_current_tabpage(self.tabpage)
+            execute 'pedit +buffer\ ' . scratch
+          endif
         endif
       endif
     endif
-  endif
+  endfor
 endfunction
 
 function! s:goto_cleanup() abort dict
@@ -85,30 +91,33 @@ function! s:goto_cleanup() abort dict
 endfunction
 
 function! s:goto_handler(reply) abort dict
-  if nvim_win_is_valid(self.window)
-    if a:reply[0] is# 'def'
-      let file = a:reply[4]
-      let line = a:reply[5]
-      let col = a:reply[6] + 1
-      let openCmd = 'edit'
-      if self.openIn is# 'v'
-        let openCmd = 'vsplit'
-      elseif self.openIn is# 's'
-        let openCmd = 'split'
-      endif
-      call win_gotoid(self.window)
-      if openCmd is# 'edit' && bufnr(file) is winbufnr(self.window)
-        " setpos() won't add the position to the jumplist, but
-        " m' does (see :h jumplist), so use that instead.
-        " We also only use this here since editing commands add a jump
-        " automatically.
-        normal! m'
-        call cursor([line, col])
-      else
-        execute openCmd '+' . 'call\ cursor([' . line . ',' . col . '])' fnameescape(file)
+  for i in a:reply
+    let i = split(i, '\t', v:true)
+    if nvim_win_is_valid(self.window)
+      if i[0] is# 'def'
+        let file = i[4]
+        let line = i[5]
+        let col = i[6] + 1
+        let openCmd = 'edit'
+        if self.openIn is# 'v'
+          let openCmd = 'vsplit'
+        elseif self.openIn is# 's'
+          let openCmd = 'split'
+        endif
+        call win_gotoid(self.window)
+        if openCmd is# 'edit' && bufnr(file) is winbufnr(self.window)
+          " setpos() won't add the position to the jumplist, but
+          " m' does (see :h jumplist), so use that instead.
+          " We also only use this here since editing commands add a jump
+          " automatically.
+          normal! m'
+          call cursor([line, col])
+        else
+          execute openCmd '+' . 'call\ cursor([' . line . ',' . col . '])' fnameescape(file)
+        endif
       endif
     endif
-  endif
+  endfor
 endfunction
 
 " Go to the definition of the symbol under the cursor.

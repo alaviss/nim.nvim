@@ -17,26 +17,29 @@ function! s:on_end() abort dict
 endfunction
 
 function! s:on_data(reply) abort dict
-  if nvim_win_is_valid(self.window)
-    if a:reply[0] is# 'def'
-      call setloclist(self.window, [], ' ',
-           \          {'title': 'References to symbol: ' . a:reply[2]})
-      call win_gotoid(self.window)
-      lopen
-    elseif a:reply[0] is# 'use'
-      let filename = a:reply[4]
-      let lnum = str2nr(a:reply[5])
-      call setloclist(self.window,
-           \          [{
-           \             'filename': filename,
-           \             'lnum': lnum,
-           \             'col': str2nr(a:reply[6] + 1),
-           \             'text': s:getText(filename, lnum)
-           \          }],
-           \          'a'
-           \         )
+  for i in a:reply
+    let i = split(i, '\t', v:true)
+    if nvim_win_is_valid(self.window)
+      if i[0] is# 'def'
+        call setloclist(self.window, [], ' ',
+             \          {'title': 'References to symbol: ' . i[2]})
+        call win_gotoid(self.window)
+        lopen
+      elseif i[0] is# 'use'
+        let filename = i[4]
+        let lnum = str2nr(i[5])
+        call setloclist(self.window,
+             \          [{
+             \             'filename': filename,
+             \             'lnum': lnum,
+             \             'col': str2nr(i[6] + 1),
+             \             'text': s:getText(filename, lnum)
+             \          }],
+             \          'a'
+             \         )
+      endif
     endif
-  endif
+  endfor
 endfunction
 
 " Open a location list showing references to the symbol under cursor.

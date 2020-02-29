@@ -152,22 +152,23 @@ function s:query_cleanup() abort dict
   endif
 endfunction
 
-function s:query_on_data(chan, line, stream) abort dict
-  if a:line isnot v:null
-    call self.opts.on_data(split(trim(a:line), '\t', v:true))
+function s:query_on_data(chan, data, stream) abort dict
+  if a:data !=# ['']
+    call self.buffer.process(a:data)
+    call self.opts.on_data(a:data)
   else
     call chanclose(a:chan)
     call self.cleanup()
   endif
 endfunction
+
 " Send a query to the instance.
 "
 " command: A command string for nimsuggest (ie. 'highlight', 'sug', 'def', etc.)
 " opts: {
 "   'on_data': function(reply) [dict]: Will be called for every reply from
-"                                      nimsuggest. Each reply will be a List
-"                                      splitted by '\t' and passed to the
-"                                      callback.
+"                                      nimsuggest. reply will be a List of
+"                                      String separated by newline.
 "   'on_end' (optional): function() [dict]: Will be called at end-of-message or
 "                                           if nimsuggest died before it could
 "                                           reply.
@@ -212,10 +213,11 @@ function! s:instance_query(command, opts, ...) abort dict
   let opts = {
   \   'opts': a:opts,
   \   'dirtyFile': dirtyFile,
-  \   'cleanup': function('s:query_cleanup')
+  \   'cleanup': function('s:query_cleanup'),
+  \   'buffer': nim#suggest#utils#NewLineBuffer()
   \}
 
-  let opts.on_data = nim#suggest#utils#BufferNewline(function('s:query_on_data'))
+  let opts.on_data = function('s:query_on_data')
   try
     call self.message([a:command . ' ' . fileQuery, ''], opts, mustReady)
   catch

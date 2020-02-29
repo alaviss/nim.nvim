@@ -5,6 +5,32 @@
 " Licensed under the terms of the ISC license,
 " see the file "license.txt" included within this distribution.
 
+function! s:process(data) abort dict
+  " more than one line is received, and/or the last buffer completed
+  if len(a:data) > 1
+    " the first item completes the buffer
+    let a:data[0] = self.buffer . a:data[0]
+    " the last item is incomplete, buffer from there
+    let self.buffer = a:data[-1]
+  else
+    let self.buffer .= a:data[0]
+  endif
+  call remove(a:data, -1)
+endfunction
+
+" Return a Dict for processing the raw data passed to `on_data`-style callbacks.
+"
+" The Dict provides:
+"   function process(data): This function take in the `a:data` List, then
+"                           process it so that the list contains only
+"                           completed lines.
+function! nim#suggest#utils#NewLineBuffer() abort
+  return {
+  \   'buffer': '',
+  \   'process': function('s:process')
+  \}
+endfunction
+
 function s:bufCb(env, chan, data, stream) abort dict
   let Cb = function(a:env.cb, self)
 
@@ -13,18 +39,10 @@ function s:bufCb(env, chan, data, stream) abort dict
   elseif a:data ==# ['']
     call Cb(a:chan, v:null, a:stream)
   else
-    " more than one line is received, and/or the last buffer completed
-    if len(a:data) > 1
-      " the first item completes the buffer
-      let a:data[0] = a:env.buffer . a:data[0]
-      for i in a:data[:-2]
-        call Cb(a:chan, i, a:stream)
-      endfor
-      " the last item is incomplete, buffer from there
-      let a:env.buffer = a:data[-1]
-    else
-      let a:env.buffer .= a:data[0]
-    endif
+    call a:env.buffer.process(a:data)
+    for i in a:data
+      call Cb(a:chan, i, a:stream)
+    endfor
   endif
 endfunction
 
@@ -39,7 +57,7 @@ endfunction
 function! nim#suggest#utils#BufferNewline(cb) abort
   let env = {
   \   'cb': a:cb,
-  \   'buffer': '',
+  \   'buffer': nim#suggest#utils#NewLineBuffer(),
   \}
   return function('s:bufCb', [env])
 endfunction
