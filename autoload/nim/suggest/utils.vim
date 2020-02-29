@@ -5,23 +5,27 @@
 " Licensed under the terms of the ISC license,
 " see the file "license.txt" included within this distribution.
 
-function s:bufCb(cb, buffer, chan, data, stream) abort dict
-  let Cb = function(a:cb, self)
+function s:bufCb(env, chan, data, stream) abort dict
+  let Cb = function(a:env.cb, self)
 
   if a:stream == 'exit'
     call Cb(a:chan, a:data, a:stream)
-    return
   elseif a:data == ['']
     call Cb(a:chan, '', a:stream)
-    return
+  else
+    " more than one line is received, and/or the last buffer completed
+    if len(a:data) > 1
+      " the first item completes the buffer
+      let a:data[0] = a:env.buffer . a:data[0]
+      for i in a:data[:-2]
+        call Cb(a:chan, !empty(i) ? i : "\n", a:stream)
+      endfor
+      " the last item is incomplete, buffer from there
+      let a:env.buffer = a:data[-1]
+    else
+      let a:env.buffer .= a:data[0]
+    endif
   endif
-
-  let a:buffer[-1] .= a:data[0]
-  call extend(a:buffer, a:data[1:])
-  while len(a:buffer) > 1
-    call Cb(a:chan, !empty(a:buffer[0]) ? a:buffer[0] : '\n', a:stream)
-    unlet a:buffer[0]
-  endwhile
 endfunction
 
 " Creates an `on_data`-compatible callback that buffers data by line.
@@ -34,7 +38,11 @@ endfunction
 "
 " The callback will be called with the assigned Dict as it's Dict.
 function! nim#suggest#utils#BufferNewline(cb) abort
-  return function('s:bufCb', [a:cb, ['']])
+  let env = {
+  \   'cb': a:cb,
+  \   'buffer': '',
+  \}
+  return function('s:bufCb', [env])
 endfunction
 
 " Pretty print a nim.nvim exception
