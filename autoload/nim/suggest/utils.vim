@@ -11,14 +11,14 @@ function s:bufCb(env, chan, data, stream) abort dict
   if a:stream == 'exit'
     call Cb(a:chan, a:data, a:stream)
   elseif a:data == ['']
-    call Cb(a:chan, '', a:stream)
+    call Cb(a:chan, v:null, a:stream)
   else
     " more than one line is received, and/or the last buffer completed
     if len(a:data) > 1
       " the first item completes the buffer
       let a:data[0] = a:env.buffer . a:data[0]
       for i in a:data[:-2]
-        call Cb(a:chan, !empty(i) ? i : "\n", a:stream)
+        call Cb(a:chan, i, a:stream)
       endfor
       " the last item is incomplete, buffer from there
       let a:env.buffer = a:data[-1]
@@ -33,8 +33,7 @@ endfunction
 " cb: function(chan, line, stream) dict
 "   chan corresponds to the channel number
 "   stream corresponds to normal stream names used by neovim.
-"   line is the buffered line. On EOF, an empty string is passed.
-"   If a line is empty, a literal newline (\n) will be passed instead.
+"   line is the buffered line. On EOF, v:null is passed to line.
 "
 " The callback will be called with the assigned Dict as it's Dict.
 function! nim#suggest#utils#BufferNewline(cb) abort

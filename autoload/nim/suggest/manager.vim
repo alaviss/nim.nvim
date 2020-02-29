@@ -151,11 +151,11 @@ function s:query_cleanup() abort dict
 endfunction
 
 function s:query_on_data(chan, line, stream) abort dict
-  if empty(a:line)
+  if a:line isnot v:null
+    call self.opts.on_data(split(trim(a:line), '\t', v:true))
+  else
     call chanclose(a:chan)
     call self.cleanup()
-  else
-    call self.opts.on_data(split(trim(a:line), '\t', v:true))
   endif
 endfunction
 " Send a query to the instance.
