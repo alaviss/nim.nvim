@@ -25,11 +25,11 @@ function s:hl_on_data(reply) abort dict
   elseif a:reply[0] == 'highlight'
     let self.updated = v:true
     " replace sk prefix with ours
-    let group = "nimSug" . a:reply[1][2:]
+    let group = 'nimSug' . a:reply[1][2:]
     let line = str2nr(a:reply[2]) - 1
     let col = str2nr(a:reply[3])
-    let count = str2nr(a:reply[4])
-    call nvim_buf_add_highlight(self.buffer, self.ids[1], group, line, col, col + count)
+    let end = col + str2nr(a:reply[4])
+    call nvim_buf_add_highlight(self.buffer, self.ids[1], group, line, col, end)
   endif
 endfunction
 
