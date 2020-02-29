@@ -20,10 +20,10 @@ function s:hl_on_end() abort dict
 endfunction
 
 function s:hl_on_data(reply) abort dict
+  let self.updated = v:true
   for i in a:reply
     let i = split(i, '\t', v:true)
     if i[0] is# 'highlight'
-      let self.updated = v:true
       " replace sk prefix with ours
       let group = 'nimSug' . i[1][2:]
       let line = str2nr(i[2]) - 1
