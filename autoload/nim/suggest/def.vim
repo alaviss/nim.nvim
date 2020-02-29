@@ -115,6 +115,7 @@ function! s:goto_handler(reply) abort dict
         else
           execute openCmd '+' . 'call\ cursor([' . line . ',' . col . '])' fnameescape(file)
         endif
+        break
       endif
     endif
   endfor
