@@ -16,6 +16,7 @@ setlocal formatoptions-=t formatoptions+=croql
 setlocal include=^\\s*\\(from\\|import\\|include\\)
 setlocal suffixesadd=.nim
 setlocal keywordprg=:NimDocOf
+setlocal iskeyword=a-z,A-Z,48-57,_
 
 " required by the compiler
 setlocal expandtab
