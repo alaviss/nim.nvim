@@ -113,13 +113,20 @@ function! nim#suggest#utils#FindIdentifierStart() abort
   let start = col('.')
   if mode() is# 'i'
     " when in insert mode, the cursor will be placed at the next character,
-    " so we reduce it to get the right position
+    " so we reduce it to get the right position.
     let start -= 1
   endif
+  " the cursor position starts from 1, but string starts from 0.
   let result = start - 1
-  while result > 0 && line[result] =~ '\k\|\w'
+  while result >= 0 && line[result] =~ '\k'
     let result -= 1
   endwhile
   let result += 1
-  return result < start ? (line[result] =~ '\a' ? result + 1 : start) : start
+  if result < start && line[result] =~ '\K'
+    " found an identifier, advance by one to get the cursor column
+    let result += 1
+  else
+    let result = start
+  endif
+  return result
 endfunction
