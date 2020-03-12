@@ -191,7 +191,7 @@ function! s:instance_query(command, opts, ...) abort dict
   endif
 
   let invalidChars = '"\|\n\|\r'
-  let filename = bufname(a:opts.buffer)
+  let filename = fnamemodify(bufname(a:opts.buffer), ':p')
   if filename =~ invalidChars
     throw 'suggest-manager-file: unsupported character in path to file'
   endif
