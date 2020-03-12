@@ -57,12 +57,20 @@ vimscript, the functions in `autoload/nim/suggest/sug.vim` can be used to
 integrate nim.nvim with it. Details on how to do so differs between plugins, so
 please refer to your completion plugin's documentations.
 
+See [Support for other completion plugins][2] for pre-made configuration
+snippets for other plugins.
+
+If you have any questions, you can find me in the [`#nim`] IRC channel
+under the handle `leorize`.
+
 #### Usage
 
 See the project's [wiki][1] for more information.
 
 [0]: https://github.com/prabirshrestha/asyncomplete.vim
 [1]: https://github.com/alaviss/nim.nvim/wiki
+[2]: https://github.com/alaviss/nim.nvim/wiki/Support-for-other-completion-plugins
 [choosenim]: https://github.com/dom96/choosenim
 [vim-packager]: https://github.com/kristijanhusak/vim-packager
 [vim-plug]: https://github.com/junegunn/vim-plug
+[`#nim`]: irc://freenode.net/nim
