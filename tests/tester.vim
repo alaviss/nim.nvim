@@ -5,13 +5,19 @@ function! ParseTests() abort
   let result = []
   let numRegex = '-\?\d\+'
   call cursor(1, 1)
-  while search('#!\s*' . numRegex, 'zW') != 0
+  while search('#\[\?!\s*' . numRegex, 'zW') != 0
     let pos = getcurpos()
     let line = getline('.')
     let test = {'position': [pos[1], pos[2]],
         \       'expected': str2nr(matchstr(line, numRegex)),
-        \       'disabled': line =~ ('#!\s*' . numRegex . '\s\+disabled')}
+        \       'disabled': line =~ ('#\[\?!\s*' .. numRegex .. '\s\+disabled')}
     call add(result, test)
+    " omit the test spec from the line
+    let [_, specEnd] = searchpairpos('#\[', '', ']#', 'nW', '', line('.'))
+    if specEnd == 0
+      let specEnd = col('$') - 1
+    endif
+    call setline('.', line[: pos[2] - 2] .. ' ' .. line[specEnd + 1 :])
   endwhile
   return result
 endfunction

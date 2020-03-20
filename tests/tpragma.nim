@@ -3,6 +3,6 @@ proc longProc(a: int,
   #! 2
 
 proc longProc(a: int,
-              b: string)
+              b: string): seq[int]
              {.noSideEffects.} = #! 13
   #! 2
