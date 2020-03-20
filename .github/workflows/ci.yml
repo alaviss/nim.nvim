@@ -1,0 +1,16 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v2
+      - name: 'Install neovim'
+        run: |
+          sudo add-apt-repository ppa:neovim-ppa/unstable
+          sudo apt-fast update -qq
+          sudo apt-fast install --no-install-recommends -yq neovim
+      - name: 'Run check'
+        run: ./tests/test.sh
