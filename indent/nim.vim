@@ -210,6 +210,26 @@ function! GetNimIndent(lnum) abort
       " uncomment the expression above if you like having your `case` ends
       " with a `:` but still want the next `of` to be on the same line.
       let result = prevIndent + shiftwidth()
+      " we want to handle this kind of expression:
+      "   if aLongCall("foo",
+      "                1,
+      "                2,
+      "                3):
+      "     |
+      "
+      " look for a close parenthesis from the end of the previous line.
+      let [plnum, pcol] = s:findClean(prevLnum, col([prevLnum, '$']),
+                                     \s:PairStop, 'b', prevLnum)
+      if plnum isnot 0
+        " found one, trace the opening
+        let [plnum, pcol] = s:findPair(plnum, pcol, s:PairStart, s:PairStop,
+                                      \'b', 0)
+        if plnum isnot 0
+          " use the indent of the opening line to produce the indent for this
+          " line
+          let result = indent(plnum) + shiftwidth()
+        endif
+      endif
     " handle a '=' after some tokens, but don't try if that '=' is standing
     " alone.
     elseif prevLine =~# '.\+=$'
