@@ -418,9 +418,9 @@ function! GetNimIndent(lnum) abort
           let result = -1
         endif
       endif
-    " empty line, because the rules following are subjective and should be
-    " overriable.
-    elseif line is# ''
+    " our limited set of triggers should prevent these rules from being too
+    " invasive.
+    else
       " look backward to see if we are in a parenthesis
       let [plnum, pcol] = s:findPair(a:lnum, s:icol('.'),
                                     \s:PairStart, s:PairStop,

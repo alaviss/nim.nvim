@@ -1,5 +1,5 @@
 proc foo(a: string,
-         b: int) =
+         b: int) = #! 9
   #! 2
 
 proc foo(a: string,
