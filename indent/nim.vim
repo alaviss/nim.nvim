@@ -236,7 +236,7 @@ function! GetNimIndent(lnum) abort
       " indent by one shiftwidth by default
       let result = prevIndent + shiftwidth()
       " if it's not guaranteed to be a simple expression / assignment
-      if prevLine !~# '\^\%(proc\|method\|template\|macro\|let\|var\|const\)\>'
+      if prevLine !~# '\^\%(func\|proc\|method\|template\|macro\|let\|var\|const\)\>'
          \&& prevLine !~# '^\K\k*\s*=$'
         " could be a multi-line decl
         "
