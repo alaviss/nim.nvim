@@ -475,34 +475,44 @@ function! GetNimIndent(lnum) abort
         endif
       " no parenthesis found, and the previous line ended in a comma
       elseif plnum is 0 && prevLine =~# ',$'
-        let [clnum, cline] = s:prevCleanLine(prevLnum)
-        if cline =~# ',$'
-          " the previous line is probably a part of an ongoing trail of
-          " parameters
-          "
-          " ie.
-          "
-          " foo a,
-          "     b,
-          "     | <-
-          "
-          " don't touch the indent
-        else
-          " otherwise this might be in a command call
-          "
-          " echo a,
-          "      | <- we want our cursor to be right below the first param
-          "
-          " thanks to the syntax limitation, we can safely assume that
-          " the line has to be something like this:
-          "
-          "   identifier variable-space param,
-          "
-          " to qualify as a command call with multiple parameters
-          if prevLine =~# '^\K\k*\s\+.\+,$'
-            " assign directly to result because we know the first match will
-            " definitely be a part of what we matched.
-            let [_, result] = s:findClean(prevLnum, 1, '\K\k*\s\+', 'e', prevLnum)
+        " get the exact column of the trailing comma
+        let [_, ccol] = s:findClean(prevLnum, col([prevLnum, '$']), ',', 'b',
+                                   \prevLnum)
+        " get the parenthesis surrounding the comma
+        let [plnum, _] = s:findPair(prevLnum, ccol,
+                                   \s:PairStart, s:PairStop,
+                                   \'b', 0)
+        " if the comma is not inside a parenthesis
+        if plnum is 0
+          let [clnum, cline] = s:prevCleanLine(prevLnum)
+          if cline =~# ',$'
+            " the previous line is probably a part of an ongoing trail of
+            " parameters
+            "
+            " ie.
+            "
+            " foo a,
+            "     b,
+            "     | <-
+            "
+            " don't touch the indent
+          else
+            " otherwise this might be in a command call
+            "
+            " echo a,
+            "      | <- we want our cursor to be right below the first param
+            "
+            " thanks to the syntax limitation, we can safely assume that
+            " the line has to be something like this:
+            "
+            "   identifier variable-space param,
+            "
+            " to qualify as a command call with multiple parameters
+            if prevLine =~# '^\K\k*\s\+.\+,$'
+              " assign directly to result because we know the first match will
+              " definitely be a part of what we matched.
+              let [_, result] = s:findClean(prevLnum, 1, '\K\k*\s\+', 'e', prevLnum)
+            endif
           endif
         endif
       endif
