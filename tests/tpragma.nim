@@ -1,8 +1,9 @@
 proc longProc(a: int,
-              b: string) {.noSideEffects.} =
+              b: string) {.noSideEffect.} =
   #! 2
 
 proc longProc(a: int,
               b: string): seq[int]
-             {.noSideEffects.} = #! 13
+             {.noSideEffect, #! 13
+               inline.} = #! 15
   #! 2

@@ -466,6 +466,12 @@ function! GetNimIndent(lnum) abort
           let result = prevIndent + shiftwidth()
         else
           let result = pcol
+          " can't use prevLine here since we need the full, unmodified line
+          if getline(plnum)[pcol] is# '.'
+            " {.inline,
+            "   | <- we want our cursor here
+            let result += 1
+          endif
         endif
       " no parenthesis found, and the previous line ended in a comma
       elseif plnum is 0 && prevLine =~# ',$'
