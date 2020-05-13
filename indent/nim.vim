@@ -9,7 +9,7 @@ let b:did_indent = v:true
 
 setlocal autoindent
 setlocal indentexpr=GetNimIndent(v:lnum)
-setlocal indentkeys=!^F,o,O,0{,0),0],0},0=elif,0=else
+setlocal indentkeys=!^F,o,O,0{,0),0],0},0=elif,0=else,0=except,0=finally
 
 " regex used to match all comment group names.
 let s:CommentGroups = 'Comment'
