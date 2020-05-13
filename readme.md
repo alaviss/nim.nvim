@@ -2,7 +2,7 @@
 
 This plugin is still pretty much a work-in-progress.
 
-[![Test Status](https://travis-ci.com/alaviss/nim.nvim.svg?branch=master)](https://travis-ci.com/alaviss/nim.nvim)
+![CI](https://github.com/alaviss/nim.nvim/workflows/CI/badge.svg)
 
 [![asciicast](https://asciinema.org/a/223646.svg)](https://asciinema.org/a/223646)
 
