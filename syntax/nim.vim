@@ -41,18 +41,14 @@ syntax region nimString
       \ start=+"+ skip=+\\"+ end=+"+
       \ contains=nimEscapeStr,nimEscapeChar,nimEscapeQuote,@Spell
       \ oneline
-syntax region nimString
-      \ matchgroup=nimTripleQuote
-      \ start=+"""+ end=+"*\zs"""+
-      \ contains=nimEscapeStr,nimEscapeChar,@Spell
 syntax region nimRawString
       \ matchgroup=nimQuote
-      \ start='\k\+"' end='"'
+      \ start='\<\K\k*"' end='"'
       \ contains=@Spell
       \ oneline
 syntax region nimRawString
       \ matchgroup=nimTripleQuote
-      \ start='\k\+"""' end='"*\zs"""'
+      \ start='\%(\<\K\k*\)\?"""' end='"*\zs"""'
       \ contains=@Spell
 syntax match nimCharacter +'\%(\\\%([rcnlftv\\"'abe]\|x\x\{2}\|\d\+\)\|.\)'+ contains=nimEscapeChar,nimEscapeQuote
 
