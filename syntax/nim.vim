@@ -34,7 +34,14 @@ syntax keyword nimPreProcStmt     alignof compiles defined sizeof
 syntax match nimComment      "#.*$" contains=nimTodo,@Spell
 syntax region nimLongDocComment start='##\[' end=']##' contains=nimTodo,nimLongDocComment,@Spell
 syntax region nimLongComment start='#\[' end=']#' contains=nimTodo,nimLongComment,nimLongDocComment,@Spell
+syntax cluster nimCommentGroup contains=nimComment,nimLongDocComment,nimLongComment
 syntax keyword nimTodo       FIXME NOTE NOTES TODO XXX contained
+
+syntax region nimEscapedSymbol
+      \ matchgroup=nimBacktick
+      \ start='`' end='`'
+      \ contains=@nimCommentGroup
+      \ oneline
 
 syntax region nimString
       \ matchgroup=nimQuote
