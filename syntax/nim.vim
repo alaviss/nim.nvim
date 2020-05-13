@@ -10,6 +10,19 @@ if exists("b:current_syntax")
   finish
 endif
 
+let chosen_syntax = get(g:, 'nim_emit_syntax', 'c')
+if chosen_syntax is? 'c'
+  syntax include @emitSyntax syntax/c.vim
+elseif chosen_syntax =~? 'cpp\|c++'
+  syntax include @emitSyntax syntax/cpp.vim
+elseif chosen_syntax =~? 'js\|javascript'
+  syntax include @emitSyntax syntax/javascript.vim
+elseif chosen_syntax is? 'objc'
+  syntax include @emitSyntax syntax/objc.vim
+else
+  execute 'syntax include @emitSyntax ' .. chosen_syntax
+endif
+
 let b:current_syntax = "nim"
 
 " Keyword from the Manual, classified to different categories
@@ -31,11 +44,14 @@ syntax keyword nimStructure       enum object tuple
 
 syntax keyword nimPreProcStmt     alignof compiles defined sizeof
 
+syntax cluster nimKeywordGroup contains=nimKeywordOperator,nimStatement,nimConditional,nimException,nimRepeat,nimConstant,nimPreCondit,nimInclude,nimStructure,nimPreProcStmt
+
 syntax match nimComment      "#.*$" contains=nimTodo,@Spell
 syntax region nimLongDocComment start='##\[' end=']##' contains=nimTodo,nimLongDocComment,@Spell
 syntax region nimLongComment start='#\[' end=']#' contains=nimTodo,nimLongComment,nimLongDocComment,@Spell
-syntax cluster nimCommentGroup contains=nimComment,nimLongDocComment,nimLongComment
 syntax keyword nimTodo       FIXME NOTE NOTES TODO XXX contained
+
+syntax cluster nimCommentGroup contains=nimComment,nimLongDocComment,nimLongComment
 
 syntax region nimEscapedSymbol
       \ matchgroup=nimBacktick
@@ -82,6 +98,8 @@ syntax match nimFloat display "\<\d\+\%(_\d\+\)*\%(\.\d\+\%(_\d\+\)*\)\%([eE][+-
 " if have exponent
 syntax match nimFloat display "\<\d\+\%(_\d\+\)*\%([eE][+-]\=\d\+\%(_\d\+\)*\)\%('\=\%([fF]\%(32\|64\)\=\|[dD]\)\)\=\>"
 
+syntax cluster nimLiteralGroup contains=nimString,nimRawString,nimCharacter,nimNumber,nimFloat
+
 " pragmas in Nim are matched style-insensitively, so we need to create custom
 " matches for them.
 function! s:matchPragmas(pragmas) abort
@@ -110,9 +128,41 @@ call s:matchPragmas(['deprecated', 'noSideEffect', 'compileTime', 'noReturn',
      \               'inject', 'gensym', 'explain', 'noRewrite', 'package',
      \               'inheritable', 'constructor'])
 
+syntax region nimEmitString
+      \ matchgroup=nimQuote
+      \ start=+"+ skip=+\\"+ end=+"+
+      \ contains=@emitSyntax,nimEscapeStr,nimEscapeChar,nimEscapeQuote
+      \ oneline
+      \ contained
+      \ keepend
+syntax region nimEmitRawString
+      \ matchgroup=nimQuote
+      \ start='\<\K\k*"' end='"'
+      \ contains=@emitSyntax
+      \ oneline
+      \ contained
+      \ keepend
+syntax region nimEmitRawString
+      \ matchgroup=nimTripleQuote
+      \ start='\%(\<\K\k*\)\?"""' end='"*\zs"""'
+      \ contains=@emitSyntax
+      \ contained
+      \ keepend
+
+syntax region nimEmitArray
+      \ start='\[' end=']'
+      \ contains=@nimKeywordGroup,@nimLiteralGroup,@nimCommentGroup,nimEmitString,nimEmitRawString
+      \ contained
+
+execute 'syntax region nimEmit ' ..
+      \ 'start=+\<\%(' .. nim#SearchIdentifierRegex('emit') .. '\|' .. nim#SearchIdentifierRegex('codegendecl') .. '\)\m\s*:+ ' ..
+      \ 'end=+\ze\%(,\|\.\?}\)+ ' ..
+      \ 'contains=@nimKeywordGroup,@nimLiteralGroup,@nimCommentGroup,nimPragma,nimEmit.\+ ' ..
+      \ 'contained'
+
 syntax region nimPragmaList
       \ start=+{\.+ end=+\.\?}+
-      \ contains=nimPragma,nimString,nimRawString
+      \ contains=@nimKeywordGroup,@nimLiteralGroup,@nimCommentGroup,nimPragma,nimEmit
 
 " sync at the beginning of functions definition
 syntax sync match nimSync grouphere NONE "^\%(proc\|func\|iterator\|method\)\s\+\a\w*\s*[(:=]"

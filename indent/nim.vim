@@ -38,8 +38,10 @@ endfunction
 " check if the given cursor position is a part of indent-insignificant syntax
 " groups.
 function! s:ignorePos(lnum, col) abort
-  return s:syntaxName(a:lnum, a:col) =~# '\%(' .. s:CommentGroups .. '\|'
-        \.. s:StringGroups .. '\|' .. s:CharGroups .. '\)'
+  let syntax = s:syntaxName(a:lnum, a:col)
+  return syntax !~# '^nim' &&
+        \syntax =~# '\%(' .. s:CommentGroups .. '\|' .. s:StringGroups ..
+        \           '\|' .. s:CharGroups .. '\)'
 endfunction
 
 " get the byte indices containing the beginning and end of the comments on the
