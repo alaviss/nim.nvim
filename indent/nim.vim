@@ -39,7 +39,7 @@ endfunction
 " groups.
 function! s:ignorePos(lnum, col) abort
   let syntax = s:syntaxName(a:lnum, a:col)
-  return syntax !~# '^nim' &&
+  return (syntax isnot# '' && syntax !~# '^nim') ||
         \syntax =~# '\%(' .. s:CommentGroups .. '\|' .. s:StringGroups ..
         \           '\|' .. s:CharGroups .. '\)'
 endfunction
