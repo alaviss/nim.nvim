@@ -245,7 +245,7 @@ function! GetNimIndent(lnum) abort
         " here's the monster that we will deal with
         "
         " keyword ident pattern? genericParamList? ( newlineInd?
-        "   paramList ) :one-line-expr|type|type[..]?
+        "   paramList ) : newLineInd? one-line-expr|type|type[..]?
         "     newlineInd? {. newlineInd?
         "       pragma list .?}? =
         "
@@ -370,22 +370,41 @@ function! GetNimIndent(lnum) abort
                     let result = indent(plnum) + shiftwidth()
                   endif
                 else
-                  " might be this then?
+                  " might be this:
                   "
                   " proc something(a: string,
-                  "                b: int) =
+                  "                b: int):
+                  "   owned(expr) =
                   "   |
                   "
-                  " or
-                  "
-                  " proc something: owned(
-                  "   expr
-                  " ) =
-                  "   |
-                  "
-                  "
-                  " seems safe enough to just use the opening as our indent
-                  let result = indent(pplnum) + shiftwidth()
+                  let [plnum, pline] = s:prevCleanLine(pplnum)
+                  if pline =~# ')\s*:$'
+                    " seems likely
+                    " locate the real position of the closing paren
+                    let [_, pcol] = s:findClean(plnum, col([plnum, '$']), ')', 'b', plnum)
+                    " then find the starting parenthesis and use that line indent.
+                    let [plnum, pcol] = s:findPair(plnum, pcol, '(', ')', 'b', 0)
+                    if plnum isnot 0
+                      let result = indent(plnum) + shiftwidth()
+                    endif
+                  else
+                    " might be this then?
+                    "
+                    " proc something(a: string,
+                    "                b: int) =
+                    "   |
+                    "
+                    " or
+                    "
+                    " proc something: owned(
+                    "   expr
+                    " ) =
+                    "   |
+                    "
+                    "
+                    " seems safe enough to just use the opening as our indent
+                    let result = indent(pplnum) + shiftwidth()
+                  endif
                 endif
               endif
             endif
