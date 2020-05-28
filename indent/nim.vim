@@ -424,9 +424,30 @@ function! GetNimIndent(lnum) abort
       let [plnum, pcol] = s:findClean(prevLnum, col([prevLnum, '$']),
                                      \')', 'cb', prevLnum)
       if plnum isnot 0
-        " then find the opening and align with it
-        let [plnum, pcol] = s:findPair(plnum, pcol, '(', ')', 'b', 0)
-        let result = pcol - 1
+        let [eqlnum, _] = s:findClean(prevLnum, col([prevLnum, '$']),
+                                     \'=', 'cb', prevLnum)
+        if eqlnum isnot 0
+          " handling:
+          "
+          " proc foo(a: string,
+          "          b: int) =
+          "
+          " proc foo(a: string,
+          "          b: int) = discard
+          "
+          " do nothing here
+        else
+          " then find the opening
+          let [plnum, pcol] = s:findPair(plnum, pcol, '(', ')', 'b', 0)
+          " verify that we are dealing with a routine
+          let pline = s:getCleanLine(plnum)
+          if pline =~# '^\%(proc\|func\|method\|iterator\|template\)'
+            " it's a routine declaration.
+            "
+            " align with the opening paren.
+            let result = pcol - 1
+          endif
+        endif
       endif
     " a lone closing parenthesis
     elseif line =~# '^\%(' .. s:PairStop .. '\)$'
