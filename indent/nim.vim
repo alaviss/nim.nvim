@@ -171,7 +171,7 @@ endfunction
 function! GetNimIndent(lnum) abort
   let result = -1 " don't change the indentation
 
-  if !s:ignorePos(a:lnum, s:icol('.'))
+  if !s:ignorePos(a:lnum, s:icol('.')) && !s:ignorePos(a:lnum, 1)
     let fullLine = getline(a:lnum)
     let line = s:getCleanLine(a:lnum)
     let indent = indent(a:lnum)
