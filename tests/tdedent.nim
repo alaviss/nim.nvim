@@ -1,13 +1,13 @@
 if expr:
   discard
-  else #! 0
+  else:#[! 0]#
 
 try:
   discard
-  except #! 0
+  except:#[! 0]#
 
 try:
   discard
 except:
   discard
-  finally #! 0
+  finally:#[! 0]#

@@ -9,7 +9,7 @@ let b:did_indent = v:true
 
 setlocal autoindent
 setlocal indentexpr=GetNimIndent(v:lnum)
-setlocal indentkeys=!^F,o,O,0{,0),0],0},0=elif,0=else,0=except,0=finally
+setlocal indentkeys=!^F,o,O,0{,0),0],0},<:>
 
 " regex used to match all comment group names.
 let s:CommentGroups = 'Comment'
@@ -172,16 +172,35 @@ function! GetNimIndent(lnum) abort
   let result = -1 " don't change the indentation
 
   if !s:ignorePos(a:lnum, s:icol('.'))
+    let fullLine = getline(a:lnum)
     let line = s:getCleanLine(a:lnum)
     let indent = indent(a:lnum)
     let [prevLnum, prevLine] = s:prevCleanLine(a:lnum)
     let prevIndent = indent(prevLnum)
 
+    " filter `<:>` trigger so that it's only considered to be active when
+    " it's at EOL
+    if fullLine[s:icol('.') - 1] is# ':'
+      if fullLine[s:findClean(a:lnum, col([a:lnum, '$']), '\S', 'b', a:lnum)[1] - 1] is# ':'
+        " elif-else/except/finally
+        " except when next to one-liner of/if/elif/except/try
+        " except when right after a case stmt
+        if line =~# '^\%(el\%(se\|if\)\|except\|finally\)\>'
+              \&& prevLine !~# '^\%(case\|of\|\%(el\)\?if\|except\|try\)\>'
+          let result = prevIndent - shiftwidth()
+          " if user already dedented
+          if result >= indent
+            let result = -1
+          endif
+        endif
+      else
+        " <:> activated in the middle of the line, ignore
+      endif
     " implicit blocks
     " incl.
     " = enum
     " = concept x, y, z
-    if prevLine =~# '^\%(type\|const\|let\|var\)\>$' ||
+    elseif prevLine =~# '^\%(type\|const\|let\|var\)\>$' ||
           \prevLine =~# '=\s*\%(concept\>.*\|enum\>\)$'
       let result = prevIndent + shiftwidth()
     " = (ptr|ref) (object (of smt) | tuple)
@@ -191,16 +210,6 @@ function! GetNimIndent(lnum) abort
       let result = prevIndent + shiftwidth()
     " noreturn statements
     elseif prevLine =~# '^\%(break\|continue\|return\|raise\)\>'
-      let result = prevIndent - shiftwidth()
-      " if user already dedented
-      if result >= indent
-        let result = -1
-      endif
-    " elif-else/except/finally
-    " except when next to one-liner of/if/elif/except/try
-    " except when right after a case stmt
-    elseif line =~# '^\%(el\%(se\|if\)\|except\|finally\)\>'
-          \&& prevLine !~# '^\%(case\|of\|\%(el\)\?if\|except\|try\)\>'
       let result = prevIndent - shiftwidth()
       " if user already dedented
       if result >= indent

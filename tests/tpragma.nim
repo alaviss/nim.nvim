@@ -5,7 +5,7 @@ proc longProc(a: int,
 proc longProc(a: int,
               b: string): seq[int]
              {.noSideEffect, #! 13
-               inline.} = #! 15
+               #[! 15]#inline.} =
   #! 2
 
 proc longProc(a: int,

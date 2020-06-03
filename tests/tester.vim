@@ -30,7 +30,8 @@ function! RunTests() abort
       echomsg posStr . 'skipped'
       continue
     endif
-    let indent = GetNimIndent(t.position[0])
+    call cursor(t.position[0], t.position[1] - 1)
+    let indent = GetNimIndent(line('.'))
     if indent != t.expected
       echomsg posStr . 'expected ' . t.expected . ' but got ' . indent
       let g:test_exit = 1
