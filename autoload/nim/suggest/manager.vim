@@ -324,10 +324,12 @@ endfunction
 " See the result variable below for the returned Dict. It's not advised to
 " edit the dict without using the functions in this file.
 function! nim#suggest#manager#NewInstance(config, file, callback) abort
-  let help = system([a:config.nimsuggest, '--help'])
-  if v:shell_error is -1
-    throw 'suggest-manager-exec: nimsuggest (' . a:config.nimsuggest . ') cannot be executed'
-  elseif help !~# '--autobind'
+  try
+    let help = system([a:config.nimsuggest, '--help'])
+  catch
+    throw 'suggest-manager-exec: nimsuggest (' . a:config.nimsuggest . ') cannot be executed: ' . v:exception
+  endtry
+  if help !~# '--autobind'
     throw 'suggest-manager-compat: only nimsuggest >= 0.20.0 is supported'
   endif
 
