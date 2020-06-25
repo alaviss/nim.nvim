@@ -311,6 +311,12 @@ function! s:findProjectMain(path) abort
     if !empty(candidates)
       return candidates[0]
     endif
+    " found a nimble file, but we couldn't figure out where the project file
+    " is. Either way, this spot marks the boundary in which the project file
+    " could be found.
+    if !empty(nimblepkg)
+      return ''
+    endif
     let prev = current
     let current = fnamemodify(current, ':h')
     if prev is# current
