@@ -259,6 +259,9 @@ function! s:findProjectMain(path) abort
   let candidates = []
 
   let nimblepkg = ''
+  " the amount of paths traversed after reaching the boundary, < 0 means
+  " boundary not reached yet.
+  let boundaryDepth = -1
   while v:true
     " arcane magic to make sure that the path seperator appear at the end
     let esccur = fnameescape(fnamemodify(current, ':p'))
@@ -269,7 +272,10 @@ function! s:findProjectMain(path) abort
     endfor
 
     for f in configs
-      if f is? 'config.nims'
+      if fnamemodify(f, ':t') =~? 'config\.nims\|nim\.cfg'
+        if boundaryDepth < 0
+          let boundaryDepth = 0
+        endif
         continue
       elseif fnamemodify(f, ':e') is? 'nimble'
         if empty(nimblepkg)
@@ -284,7 +290,14 @@ function! s:findProjectMain(path) abort
         let candidate .= '.nim'
       endif
       let candidate = fnameescape(candidate)
-      for i in current isnot# a:path && !empty(nimblepkg) ? [esccur, escprv] : [esccur]
+      let searchDirs = []
+      if boundaryDepth < 0
+        call add(searchDirs, esccur)
+      endif
+      if current isnot# a:path && !empty(nimblepkg)
+        call add(searchDirs, escprv)
+      endif
+      for i in searchDirs
         call extend(candidates, glob(i . candidate, v:true, v:true))
       endfor
     endfor
@@ -301,6 +314,12 @@ function! s:findProjectMain(path) abort
     let prev = current
     let current = fnamemodify(current, ':h')
     if prev is# current
+      return ''
+    endif
+    if boundaryDepth >= 0
+      let boundaryDepth += 1
+    endif
+    if boundaryDepth > 1
       return ''
     endif
   endwhile
