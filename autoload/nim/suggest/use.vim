@@ -20,11 +20,16 @@ function! s:on_data(reply) abort dict
   for i in a:reply
     let i = split(i, '\t', v:true)
     if nvim_win_is_valid(self.window)
-      if i[0] is# 'def'
-        call setloclist(self.window, [], ' ',
-             \          {'title': 'References to symbol: ' . i[2]})
+      if !self.gotReply
+        call setloclist(self.window, [], ' ')
         call win_gotoid(self.window)
         lopen
+        let self.gotReply = v:true
+      endif
+
+      if i[0] is# 'def'
+        call setloclist(self.window, [], 'a',
+             \          {'title': 'References to symbol: ' . i[2]})
       elseif i[0] is# 'use'
         let filename = i[4]
         let lnum = str2nr(i[5])
@@ -54,7 +59,8 @@ function! nim#suggest#use#ShowReferences() abort
         \         'on_data': function('s:on_data'),
         \         'on_end': function('s:on_end'),
         \         'window': win_getid(),
-        \         'pos': getcurpos()[1:2]
+        \         'pos': getcurpos()[1:2],
+        \         'gotReply': v:false
         \      }
     let w:nimSugLocListLock = v:true
     call nim#suggest#utils#Query('use', opts, v:false)
