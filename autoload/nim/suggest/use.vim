@@ -3,15 +3,6 @@
 " Licensed under the terms of the ISC license,
 " see the file "license.txt" included within this distribution.
 
-function! s:getText(filename, lnum) abort
-  let buffer = bufnr(fnameescape(a:filename))
-  if bufloaded(buffer)
-    return getbufline(buffer, a:lnum)[0]
-  else
-    return readfile(a:filename, '', a:lnum)[-1]
-  endif
-endfunction
-
 function! s:on_end() abort dict
   call settabwinvar(0, self.window, 'nimSugLocListLock', v:false)
 endfunction
@@ -38,7 +29,7 @@ function! s:on_data(reply) abort dict
              \             'filename': filename,
              \             'lnum': lnum,
              \             'col': str2nr(i[6] + 1),
-             \             'text': s:getText(filename, lnum)
+             \             'text': nim#suggest#utils#GetLine(filename, lnum)
              \          }],
              \          'a'
              \         )

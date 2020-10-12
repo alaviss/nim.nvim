@@ -130,3 +130,17 @@ function! nim#suggest#utils#FindIdentifierStart() abort
   endif
   return result
 endfunction
+
+" Returns the string at line `lnum` in the file with the given filename.
+"
+" Will attempt to fetch said string from an open buffer of the file.
+function! nim#suggest#utils#GetLine(filename, lnum) abort
+  let buffer = bufnr(fnameescape(a:filename))
+  if bufloaded(buffer)
+    return getbufline(buffer, a:lnum)[0]
+  else
+    return readfile(a:filename, '', a:lnum)[-1]
+  endif
+endfunction
+
+

@@ -25,7 +25,7 @@ endfunction
 function! s:type_handler(reply) abort dict
   for i in a:reply
     let i = split(i, '\t', v:true)
-    if nvim_win_is_valid(self.window)
+    if !self.done && nvim_win_is_valid(self.window)
       if i[0] is# 'def' && !empty(i[3])
         let signature = i[2] . ': ' . i[3]
         let scratch = nvim_create_buf(v:false, v:true)
@@ -45,6 +45,8 @@ function! s:type_handler(reply) abort dict
         \   }
         \)
         call s:setCloseOnMove(float)
+        let self.done = v:true
+        break
       endif
     endif
   endfor
@@ -57,7 +59,7 @@ endfunction
 function! s:doc_handler(reply) abort dict
   for i in a:reply
     let i = split(i, '\t', v:true)
-    if nvim_tabpage_is_valid(self.tabpage)
+    if !self.done && nvim_tabpage_is_valid(self.tabpage)
       if i[0] is# 'def'
         if len(i[7]) > 2
           let docs = split(trim(eval(i[7])), '\n')
@@ -74,6 +76,8 @@ function! s:doc_handler(reply) abort dict
             call nvim_set_current_tabpage(self.tabpage)
             execute 'pedit +buffer\ ' . scratch
           endif
+          let self.done = v:true
+          break
         endif
       endif
     endif
@@ -81,7 +85,23 @@ function! s:doc_handler(reply) abort dict
 endfunction
 
 function! s:goto_cleanup() abort dict
-  call settabwinvar(0, self.window, 'nimSugDefLock', v:false)
+  if self.defIdx isnot 0 && nvim_win_is_valid(self.window)
+    let oldSwb = &switchbuf
+    let &switchbuf = 'useopen'
+    if self.openIn is# 'v'
+      let &switchbuf = 'vsplit'
+    elseif self.openIn is# 's'
+      let &switchbuf = 'split'
+    endif
+    call win_gotoid(self.window)
+    if self.defIdx > 1
+      lopen
+    endif
+    execute 'll ' . self.defIdx
+    let &switchbuf = oldSwb
+    call settabwinvar(0, self.window, 'nimSugDefLock', v:false)
+    call settabwinvar(0, self.window, 'nimSugLocListLock', v:false)
+  endif
 endfunction
 
 function! s:goto_handler(reply) abort dict
@@ -89,27 +109,25 @@ function! s:goto_handler(reply) abort dict
     let i = split(i, '\t', v:true)
     if nvim_win_is_valid(self.window)
       if i[0] is# 'def'
+        let signature = i[2]
         let file = i[4]
-        let line = i[5]
-        let col = i[6] + 1
-        let openCmd = 'edit'
-        if self.openIn is# 'v'
-          let openCmd = 'vsplit'
-        elseif self.openIn is# 's'
-          let openCmd = 'split'
+        let lnum = str2nr(i[5])
+        let col = str2nr(i[6]) + 1
+        if self.firstReply
+          call setloclist(self.window, [], ' ',
+               \          {'title': 'Declarations of symbol: ' . signature})
+          let self.firstReply = v:false
         endif
-        call win_gotoid(self.window)
-        if openCmd is# 'edit' && bufnr(file) is winbufnr(self.window)
-          " setpos() won't add the position to the jumplist, but
-          " m' does (see :h jumplist), so use that instead.
-          " We also only use this here since editing commands add a jump
-          " automatically.
-          normal! m'
-          call cursor([line, col])
-        else
-          execute openCmd '+' . 'call\ cursor([' . line . ',' . col . '])' fnameescape(file)
-        endif
-        break
+        call setloclist(self.window,
+             \          [{
+             \            'filename': file,
+             \            'lnum': lnum,
+             \            'col': col,
+             \            'text': nim#suggest#utils#GetLine(file, lnum)
+             \          }],
+             \          'a'
+             \         )
+        let self.defIdx += 1
       endif
     endif
   endfor
@@ -140,8 +158,12 @@ function! nim#suggest#def#GoTo(openIn) abort
       \       'on_end': function('s:goto_cleanup'),
       \       'window': win_getid(),
       \       'openIn': a:openIn,
-      \       'pos': getcurpos()[1:2]}
+      \       'pos': getcurpos()[1:2],
+      \       'firstReply': v:true,
+      \       'defIdx': 0}
   let w:nimSugDefLock = v:true
+  let w:nimSugLocListLock = v:true
+  call setloclist(opts.window, [], ' ')
   call nim#suggest#utils#Query('def', opts, v:false, v:true)
 endfunction
 
@@ -152,7 +174,8 @@ endfunction
 function! nim#suggest#def#ShowType() abort
   let opts = {'on_data': function('s:type_handler'),
       \       'window': win_getid(),
-      \       'pos': [line('.'), nim#suggest#utils#FindIdentifierStart()]}
+      \       'pos': [line('.'), nim#suggest#utils#FindIdentifierStart()],
+      \       'done': v:false}
   call nim#suggest#utils#Query('def', opts, v:false, v:true)
 endfunction
 
@@ -170,7 +193,8 @@ function! nim#suggest#def#ShowDoc() abort
     let opts = {'on_data': function('s:doc_handler'),
         \       'on_end': function('s:doc_cleanup'),
         \       'tabpage': nvim_get_current_tabpage(),
-        \       'pos': getcurpos()[1:2]}
+        \       'pos': getcurpos()[1:2],
+        \       'done': v:false}
     call nim#suggest#utils#Query('def', opts, v:false, v:true)
   endif
 endfunction
