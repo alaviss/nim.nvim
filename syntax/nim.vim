@@ -97,7 +97,8 @@ let nimCustomSuffix = '''\K\+\k*'
 function s:matchNumber(name, base, suffix) abort
   " base: [[regex: string, suffixOpt: bool?]]
   for [bregex, suffixOpt] in a:base
-    let regex = '\<' .. bregex
+    " unary `-` is a part of a literal
+    let regex = '-\=' .. bregex
     if suffixOpt
       let regex .= '\%(' .. a:suffix .. '\)\='
     else
