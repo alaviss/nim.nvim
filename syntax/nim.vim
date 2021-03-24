@@ -82,23 +82,58 @@ syntax match nimEscapeQuote +\\"+ contained
 syntax match nimEscapeStr   "\\p" contained
 syntax match nimEscapeStr   "\\u\%(\x\{4}\|{\x\+}\)" contained
 
-syntax match nimNumber display "\<\d\+\%(_\d\+\)*\%('\=[iIuU]\%(8\|16\|32\|64\)\)\=\>"
-syntax match nimNumber display "\<0[xX]\x\+\%(_\x\+\)*\%('\=[iIuU]\%(8\|16\|32\|64\)\)\=\>"
-syntax match nimNumber display "\<0o\o\+\%(_\o\+\)*\%('\=[iIuU]\%(8\|16\|32\|64\)\)\=\>"
-syntax match nimNumber display "\<0[bB][01]\+\%(_[01]\+\)*\%('\=[iIuU]\%(8\|16\|32\|64\)\)\=\>"
+let nimDec = '\d\+\%(_\d\+\)*'
+let nimHex = '0[xX]\x\+\%(_\x\+\)*'
+let nimOct = '0o\o\+\%(_\o\+\)*'
+let nimBin = '0[bB][01]\+\%(_[01]\+\)*'
 
-" floats are evil
-" if have float suffix
-syntax match nimFloat display "\<\d\+\%(_\d\+\)*'\=\%([fF]\%(32\|64\)\=\|[dD]\)\>"
-syntax match nimFloat display "\<0[xX]\x\+\%(_\x\+\)*'\%([fF]\%(32\|64\)\=\|[dD]\)\>"
-syntax match nimFloat display "\<0o\o\+\%(_\o\+\)*'\=\%([fF]\%(32\|64\)\=\|[dD]\)\>"
-syntax match nimFloat display "\<0[bB][01]\+\%(_[01]\+\)*'\=\%([fF]\%(32\|64\)\=\|[dD]\)\>"
-" if have fractional part and optionally exponent
-syntax match nimFloat display "\<\d\+\%(_\d\+\)*\%(\.\d\+\%(_\d\+\)*\)\%([eE][+-]\=\d\+\%(_\d\+\)*\)\=\%('\=\%([fF]\%(32\|64\)\=\|[dD]\)\)\=\>"
-" if have exponent
-syntax match nimFloat display "\<\d\+\%(_\d\+\)*\%([eE][+-]\=\d\+\%(_\d\+\)*\)\%('\=\%([fF]\%(32\|64\)\=\|[dD]\)\)\=\>"
+let nimDecFloat = nimDec .. '\.' .. nimDec
+let nimExpSuffix = '[eE][+-]\=' .. nimDec
 
-syntax cluster nimLiteralGroup contains=nimString,nimRawString,nimCharacter,nimNumber,nimFloat
+let nimIntSuffix = '''\=[iIuU]\%(8\|16\|32\|64\)'
+let nimFloatSuffix = '''\=\%([fF]\%(32\|64\|128\)\=\|[dD]\)'
+let nimCustomSuffix = '''\K\+\k*'
+
+function s:matchNumber(name, base, suffix) abort
+  " base: [[regex: string, suffixOpt: bool?]]
+  for [bregex, suffixOpt] in a:base
+    let regex = '\<' .. bregex
+    if suffixOpt
+      let regex .= '\%(' .. a:suffix .. '\)\='
+    else
+      let regex .= a:suffix
+    endif
+    let regex .= '\>'
+
+    execute 'syntax match ' .. a:name .. ' display "' .. regex .. '"'
+  endfor
+endfunction
+
+call s:matchNumber(
+     \ 'nimNumber',
+     \ [[nimDec, v:true], [nimHex, v:true], [nimOct, v:true], [nimBin, v:true]],
+     \ nimIntSuffix
+     \ )
+
+call s:matchNumber(
+     \ 'nimFloat',
+     \ [[nimDec, v:false], [nimHex, v:false], [nimOct, v:false],
+     \  [nimBin, v:false],
+     \  [nimDecFloat .. '\%(' .. nimExpSuffix .. '\)\=', v:true],
+     \  [nimDec .. nimExpSuffix, v:true]],
+     \ nimFloatSuffix
+     \ )
+
+call s:matchNumber(
+     \ 'nimCustomNumber',
+     \ [[nimDec, v:false], [nimHex, v:false], [nimOct, v:false],
+     \  [nimBin, v:false],
+     \  [nimDecFloat .. '\%(' .. nimExpSuffix .. '\)\=', v:false],
+     \  [nimDec .. nimExpSuffix, v:false]],
+     \ nimCustomSuffix
+     \ )
+
+syntax cluster nimLiteralGroup contains=nimString,nimRawString,nimCharacter,nimNumber,nimFloat,nimCustomNumber
 
 " pragmas in Nim are matched style-insensitively, so we need to create custom
 " matches for them.
@@ -197,6 +232,7 @@ highlight default link nimTripleQuote     nimQuote
 highlight default link nimCharacter       Character
 highlight default link nimNumber          Number
 highlight default link nimFloat           Float
+highlight default link nimCustomNumber    Number
 highlight default link nimPragma          PreProc
 " semantic highlighter, straight from the compiler
 " TSymKind in compiler/ast.nim, sk prefix replaced with nimSug
