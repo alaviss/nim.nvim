@@ -98,7 +98,7 @@ function s:matchNumber(name, base, suffix) abort
   " base: [[regex: string, suffixOpt: bool?]]
   for [bregex, suffixOpt] in a:base
     " unary `-` is a part of a literal
-    let regex = '-\=' .. bregex
+    let regex = '\%(\<\|\%(\s\+\zs\|^\)\-\)' .. bregex
     if suffixOpt
       let regex .= '\%(' .. a:suffix .. '\)\='
     else
