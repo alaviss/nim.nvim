@@ -129,3 +129,27 @@ if !exists('no_plugin_maps') && !exists('no_nim_maps')
     nmap <buffer> g* <Plug>NimGStar
   endif
 endif
+
+function s:updateSemanticHighlight() abort
+  if (!exists('SessionLoad') || !SessionLoad) &&
+    \ !empty(nim#suggest#ProjectFindOrStart())
+    if get(b:, 'nim_last_changed', -1) != b:changedtick
+      call nim#suggest#highlight#HighlightBuffer()
+      let b:nim_last_changed = b:changedtick
+    endif
+  endif
+endfunction
+
+augroup NimSemanticHighlight
+  autocmd!
+  autocmd BufNewFile,BufReadPost,BufWritePost *.nim
+  \ call s:updateSemanticHighlight()
+
+  if get(g:, 'nim_highlight_wait', v:false)
+    autocmd CursorHold,CursorHoldI,InsertEnter,InsertLeave *.nim
+    \ call s:updateSemanticHighlight()
+  else
+    autocmd TextChanged,TextChangedI,TextChangedP *.nim
+    \ call s:updateSemanticHighlight()
+  endif
+augroup END
