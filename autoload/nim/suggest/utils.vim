@@ -111,13 +111,13 @@ endfunction
 function! nim#suggest#utils#FindIdentifierStart() abort
   let line = getline('.')
   let start = col('.')
-  if mode() is# 'i'
-    " when in insert mode, the cursor will be placed at the next character,
-    " so we reduce it to get the right position.
-    let start -= 1
-  endif
   " the cursor position starts from 1, but string starts from 0.
   let result = start - 1
+  if mode() is# 'i'
+    " when in insert mode, the cursor will be placed on the next (non-existent)
+    " character, so we have to reduce the starting index by one.
+    let result -= 1
+  endif
   while result >= 0 && line[result] =~ '\k'
     let result -= 1
   endwhile
