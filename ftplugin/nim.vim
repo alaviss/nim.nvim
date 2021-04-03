@@ -142,7 +142,7 @@ endfunction
 
 augroup NimSemanticHighlight
   autocmd!
-  autocmd BufNewFile,BufReadPost,BufWritePost *.nim
+  autocmd BufNewFile,BufWinEnter,BufWritePost *.nim
   \ call s:updateSemanticHighlight()
 
   if get(g:, 'nim_highlight_wait', v:false)
