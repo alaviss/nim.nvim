@@ -21,5 +21,8 @@ proc longProc(a: int,
 proc foo() {.importcpp: "foo(@)".}
 { #! -1
 
+proc bar() {.someMacro: [
+             { #! -1
+
 {.somePragma().}
 { #! -1
