@@ -17,5 +17,10 @@ proc longProc(a: int,
               b: string): int =
   { #! 2
 
+# Issue #41
+# FIXME: This { should not be indented at all.
+proc foo() {.sideeffect, importcpp: "foo(@)".}
+        { #! 8
+
 {.somePragma().}
 { #! -1

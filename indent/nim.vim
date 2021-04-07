@@ -156,6 +156,9 @@ function! s:findClean(lnum, col, pattern, flags, stopline) abort
   let pattern = '\m' .. '\%(' .. a:pattern .. '\)'
   while result != [0, 0]
     let result = searchpos(pattern, flags .. 'W', a:stopline, 2)
+    " remove 'accept at cursor' flag after first search to avoid
+    " infinite loops from matched but ignored positions.
+    let flags = substitute(flags, 'c', '', 'g')
     if !s:ignorePos(result[0], result[1])
       break
     endif
