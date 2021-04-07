@@ -436,9 +436,9 @@ function! GetNimIndent(lnum) abort
       let [plnum, pcol] = s:findClean(prevLnum, col([prevLnum, '$']),
                                      \')', 'cb', prevLnum)
       if plnum isnot 0
-        let [eqlnum, _] = s:findClean(prevLnum, col([prevLnum, '$']),
-                                     \'=', 'cb', prevLnum)
-        if eqlnum isnot 0
+        let [skiplnum, _] = s:findClean(prevLnum, col([prevLnum, '$']),
+                                       \'=\|{\.', 'cb', prevLnum)
+        if skiplnum isnot 0
           " handling:
           "
           " proc foo(a: string,
@@ -446,6 +446,9 @@ function! GetNimIndent(lnum) abort
           "
           " proc foo(a: string,
           "          b: int) = discard
+          "
+          " proc foo(a: string,
+          "          b: int) {.importc.}
           "
           " do nothing here
         else
