@@ -85,10 +85,11 @@ function! s:nimNextSection(type, backwards, visual)
   endwhile
 endfunction
 
-function! s:nimStar(word)
+function! s:nimStar(word, backwards)
   let regex = nim#StarSearchRegex()
+  let searchOp = a:backwards ? '?' : '/'
   if len(regex) > 0
-    return 'silent normal! /' . (a:word ? '\<' : '') . regex . (a:word ? '\>' : '') . "\n"
+    return 'silent /' . (a:word ? '\<' : '') . regex . (a:word ? '\>' : '')
   else
     return ''
   endif
@@ -109,8 +110,10 @@ noremap <script> <buffer> <silent> <Plug>NimGoToDefSplit :call nim#suggest#def#G
 noremap <script> <buffer> <silent> <Plug>NimGoToDefVSplit :call nim#suggest#def#GoTo('v')<lf>
 noremap <script> <buffer> <silent> <Plug>NimOutline :call nim#suggest#outline#OpenLocList()<lf>
 " these have to be implemented like this due to function-search-undo
-noremap <script> <buffer> <silent> <Plug>NimStar :execute <SID>nimStar(v:true)<lf>
-noremap <script> <buffer> <silent> <Plug>NimGStar :execute <SID>nimStar(v:false)<lf>
+noremap <script> <buffer> <silent> <Plug>NimStar :execute <SID>nimStar(v:true, v:true)<lf>
+noremap <script> <buffer> <silent> <Plug>NimGStar :execute <SID>nimStar(v:false, v:true)<lf>
+noremap <script> <buffer> <silent> <Plug>NimPound :execute <SID>nimStar(v:true, v:false)<lf>
+noremap <script> <buffer> <silent> <Plug>NimGPound :execute <SID>nimStar(v:false, v:false)<lf>
 
 if !exists('no_plugin_maps') && !exists('no_nim_maps')
   if !hasmapto('<Plug>NimGoToDefBuf')
@@ -127,6 +130,12 @@ if !exists('no_plugin_maps') && !exists('no_nim_maps')
   endif
   if !hasmapto('<Plug>NimGStar')
     nmap <buffer> g* <Plug>NimGStar
+  endif
+  if !hasmapto('<Plug>NimPound')
+    nmap <buffer> * <Plug>NimPound
+  endif
+  if !hasmapto('<Plug>NimGPound')
+    nmap <buffer> g* <Plug>NimGPound
   endif
 endif
 
