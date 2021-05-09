@@ -86,10 +86,10 @@ function! s:nimNextSection(type, backwards, visual)
 endfunction
 
 function! s:nimStar(word, backwards)
-  let regex = nim#StarSearchRegex()
+  let regex = (a:word ? '\<' : '') . nim#StarSearchRegex() . (a:word ? '\>' : '')
   let searchOp = a:backwards ? '?' : '/'
   if len(regex) > 0
-    return 'silent /' . (a:word ? '\<' : '') . regex . (a:word ? '\>' : '')
+    return 'silent normal ' . searchOp . regex . "\n"
   else
     return ''
   endif
