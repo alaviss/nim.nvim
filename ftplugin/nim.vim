@@ -12,6 +12,7 @@ setlocal comments=:##,:#,s1:#[,e:]#,fb:-
 setlocal commentstring=#%s
 setlocal foldignore=
 setlocal foldmethod=indent
+setlocal foldlevel=99
 setlocal formatoptions-=t formatoptions+=croql
 setlocal include=^\\s*\\(from\\|import\\|include\\)
 setlocal suffixesadd=.nim
