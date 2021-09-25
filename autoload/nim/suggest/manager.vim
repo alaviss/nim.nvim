@@ -272,7 +272,7 @@ function! s:findProjectMain(path) abort
     endfor
 
     for f in configs
-      if fnamemodify(f, ':t') =~? 'config\.nims\|nim\.cfg'
+      if fnamemodify(f, ':t') =~? '^\%(config\.nims\|nim\.cfg\)$'
         if boundaryDepth < 0
           let boundaryDepth = 0
         endif
@@ -291,7 +291,7 @@ function! s:findProjectMain(path) abort
       endif
       let candidate = fnameescape(candidate)
       let searchDirs = []
-      if boundaryDepth < 0
+      if boundaryDepth <= 0
         call add(searchDirs, esccur)
       endif
       if current isnot# a:path && !empty(nimblepkg)
