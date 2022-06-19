@@ -13,4 +13,4 @@ jobs:
           sudo apt-fast update -qq
           sudo apt-fast install --no-install-recommends -yq neovim
       - name: 'Run check'
-        run: ./tests/test.sh
+        run: make check
