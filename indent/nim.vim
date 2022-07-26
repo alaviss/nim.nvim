@@ -313,7 +313,7 @@ function! GetNimIndent(lnum) abort
                 if pplnum is 0
                   " looks like it's not a proc definition, follow the pragma
                   " opening indentation
-                  let result = indent(plnum) + shiftwidth()\
+                  let result = indent(plnum) + shiftwidth()
                   " disable the following logic
                   let [plnum, pcol] = [0, 0]
                 else
