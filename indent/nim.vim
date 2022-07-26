@@ -196,6 +196,11 @@ function! GetNimIndent(lnum) abort
             let result = -1
           endif
         endif
+	  elseif line =~# '=\s*if.*:$'
+		" if expression. Nim's `if` can be not only statements but also expressions.
+		" let a = if cond:
+		"   "a"
+		let result += shiftwidth()
       else
         " <:> activated in the middle of the line, ignore
       endif
