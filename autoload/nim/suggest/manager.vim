@@ -203,7 +203,7 @@ function! s:instance_query(command, opts, ...) abort dict
     if dirtyFile =~ invalidChars
       throw 'suggest-manager-file-internal: unsupported character in path to dirty file'
     endif
-    let fileQuery .= ';' . dirtyFile
+    let fileQuery .= ';"' . dirtyFile . '"'
     call writefile(getbufline(a:opts.buffer, 1, '$'), dirtyFile, 'S')
   endif
   if has_key(a:opts, 'pos')
