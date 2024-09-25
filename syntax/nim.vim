@@ -45,7 +45,7 @@ syntax keyword nimStructure       enum object tuple
 " Types
 syntax keyword nimIntegerTypes    int int8 int16 int32 int64 uint uint8 uint16 uint32 uint64
 syntax keyword nimFloatTypes      float float32 float64
-syntax keyword nimOtherTypes      string
+syntax keyword nimOtherTypes      string array " You also may consider moving tuple here
 
 syntax keyword nimPreProcStmt     alignof compiles defined sizeof
 
