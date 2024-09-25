@@ -42,6 +42,11 @@ syntax keyword nimPreCondit       when
 syntax keyword nimInclude         export from import include
 syntax keyword nimStructure       enum object tuple
 
+" Types
+syntax keyword nimIntegerTypes    int int8 int16 int32 int64 uint uint8 uint16 uint32 uint64
+syntax keyword nimFloatTypes      float float32 float64
+syntax keyword nimOtherTypes      string
+
 syntax keyword nimPreProcStmt     alignof compiles defined sizeof
 
 syntax cluster nimKeywordGroup contains=nimKeywordOperator,nimStatement,nimConditional,nimException,nimRepeat,nimConstant,nimPreCondit,nimInclude,nimStructure,nimPreProcStmt
@@ -261,6 +266,11 @@ if has("nvim-0.9.0")
   highlight default link nimSugEnumField    @constant
   highlight default link nimSugForVar       @parameter
   highlight default link nimSugLabel        @label
+
+  highlight default link nimIntegerTypes    @type
+  highlight default link nimFloatTypes      @type
+  highlight default link nimOtherTypes      @type
+
 else
   highlight default link nimKeywordOperator Operator
   highlight default link nimStatement       Statement
@@ -312,4 +322,8 @@ else
   highlight default link nimSugEnumField    Constant
   highlight default link nimSugForVar       Identifier
   highlight default link nimSugLabel        Identifier
+
+  highlight default link nimIntegerTypes    Type 
+  highlight default link nimFloatTypes      Type 
+  highlight default link nimOtherTypes      Type 
 endif
