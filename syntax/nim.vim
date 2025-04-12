@@ -241,7 +241,7 @@ if has("nvim-0.10.0")
   " TSymKind in compiler/ast.nim, sk prefix replaced with nimSug
   highlight default link nimSugUnknown      Error
   highlight default link nimSugParam        @variable.parameter
-  highlight default link nimSugModule       @namespace
+  highlight default link nimSugModule       @module
   highlight default link nimSugType         @type
   highlight default link nimSugGenericParam @variable.parameter
   highlight default link nimSugVar          @variable
