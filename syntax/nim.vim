@@ -208,7 +208,60 @@ syntax sync match nimSync grouphere NONE "^\%(discard\|let\|var\|const\|type\)"
 syntax sync match nimSyncString grouphere nimString "^\%(discard\|asm\)\s\+\"\{3}"
 syntax sync match nimSyncString grouphere nimRawString "r\"\{3}"
 
-if has("nvim-0.9.0")
+if has("nvim-0.10.0")
+  highlight default link nimKeywordOperator @keyword.operator
+  highlight default link nimStatement       @keyword
+  highlight default link nimConditional     @keyword.conditional
+  highlight default link nimKeyword         @keyword
+  highlight default link nimException       @keyword.exception
+  highlight default link nimRepeat          @keyword.repeat
+  highlight default link nimConstant        @constant
+  highlight default link nimPreCondit       @keyword.conditional
+  highlight default link nimInclude         @keyword.import
+  highlight default link nimStructure       @keyword
+  highlight default link nimPreProcStmt     @function.builtin
+  highlight default link nimComment         @comment
+  highlight default link nimTodo            @comment.todo
+  highlight default link nimLongDocComment  @comment.documentation
+  highlight default link nimLongComment     @comment.documentation
+  highlight default link nimString          @string
+  highlight default link nimEscapeStr       @string.escape
+  highlight default link nimEscapeChar      @string.escape
+  highlight default link nimEscapeQuote     @string.escape
+  highlight default link nimRawString       @string
+  highlight default link nimQuote           @string
+  highlight default link nimTripleQuote     nimQuote
+  highlight default link nimCharacter       @character
+  highlight default link nimNumber          @number
+  highlight default link nimFloat           @float
+  highlight default link nimCustomNumber    @number
+  highlight default link nimPragma          @keyword.directive
+
+  " semantic highlighter, straight from the compiler
+  " TSymKind in compiler/ast.nim, sk prefix replaced with nimSug
+  highlight default link nimSugUnknown      Error
+  highlight default link nimSugParam        @variable.parameter
+  highlight default link nimSugModule       @namespace
+  highlight default link nimSugType         @type
+  highlight default link nimSugGenericParam @variable.parameter
+  highlight default link nimSugVar          @variable
+  highlight default link nimSugGlobalVar    @variable
+  highlight default link nimSugLet          @variable
+  highlight default link nimSugGlobalLet    @variable
+  highlight default link nimSugConst        @constant
+  highlight default link nimSugResult       @variable.builtin
+  highlight default link nimSugProc         @function.call
+  highlight default link nimSugFunc         @function.call
+  highlight default link nimSugMethod       @function.call
+  highlight default link nimSugIterator     @function.call
+  highlight default link nimSugConverter    @function.macro
+  highlight default link nimSugMacro        @function.macro
+  highlight default link nimSugTemplate     @function.macro
+  highlight default link nimSugField        @variable.member
+  highlight default link nimSugEnumField    @constant
+  highlight default link nimSugForVar       @variable.parameter
+  highlight default link nimSugLabel        @label
+elseif has("nvim-0.9.0")
   highlight default link nimKeywordOperator @keyword.operator
   highlight default link nimStatement       @keyword
   highlight default link nimConditional     @conditional
@@ -239,7 +292,7 @@ if has("nvim-0.9.0")
 
   " semantic highlighter, straight from the compiler
   " TSymKind in compiler/ast.nim, sk prefix replaced with nimSug
-  highlight default link nimSugUnknown      @error
+  highlight default link nimSugUnknown      Error
   highlight default link nimSugParam        @parameter
   highlight default link nimSugModule       @namespace
   highlight default link nimSugType         @type
