@@ -5,12 +5,12 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout'
+      - name: "Checkout"
         uses: actions/checkout@v2
-      - name: 'Install neovim'
+      - name: "Install neovim"
         run: |
           sudo add-apt-repository ppa:neovim-ppa/unstable
-          sudo apt-fast update -qq
-          sudo apt-fast install --no-install-recommends -yq neovim
-      - name: 'Run check'
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -yq neovim
+      - name: "Run check"
         run: ./tests/test.sh
